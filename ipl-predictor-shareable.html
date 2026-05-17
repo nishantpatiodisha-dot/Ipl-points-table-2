@@ -1,0 +1,4489 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IPL 2026 Points Predictor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+    <style>
+:root {
+  color-scheme: dark;
+  --bg: #05070d;
+  --bg-2: #0b111c;
+  --surface: rgba(15, 20, 31, 0.88);
+  --surface-strong: rgba(20, 27, 42, 0.96);
+  --surface-soft: rgba(255, 255, 255, 0.07);
+  --ink: #f7f9fc;
+  --muted: #a8b3c5;
+  --line: rgba(255, 255, 255, 0.12);
+  --line-strong: rgba(255, 255, 255, 0.2);
+  --accent: #3bd4c7;
+  --accent-dark: #94fff4;
+  --orange: #ff9a4a;
+  --green: #3ee08f;
+  --red: #ff6470;
+  --shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 48px),
+    linear-gradient(45deg, rgba(255, 255, 255, 0.024) 0 1px, transparent 1px 56px),
+    linear-gradient(180deg, #070a12 0%, #0b111c 42%, #05070d 100%),
+    var(--bg);
+  color: var(--ink);
+  font-family:
+    Manrope, Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+button,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.app-shell {
+  width: min(1440px, 100%);
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.topbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(330px, 500px);
+  gap: 24px;
+  align-items: end;
+  min-height: 176px;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background:
+    linear-gradient(116deg, rgba(244, 196, 48, 0.18), transparent 32%),
+    linear-gradient(245deg, rgba(0, 108, 183, 0.22), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03)),
+    var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.eyebrow,
+.section-kicker,
+.summary-label,
+.meta,
+.snapshot {
+  margin: 0;
+  color: var(--muted);
+}
+
+.eyebrow,
+.section-kicker,
+.summary-label,
+.meta {
+  font-size: 0.76rem;
+  font-weight: 850;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+h1,
+h2 {
+  margin: 0;
+  letter-spacing: 0;
+}
+
+h1 {
+  margin-top: 8px;
+  font-family: "Instrument Serif", Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(2.15rem, 4.8vw, 5rem);
+  line-height: 0.9;
+  text-wrap: balance;
+}
+
+h2 {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-weight: 400;
+  margin-top: 4px;
+  font-size: 1.48rem;
+}
+
+.snapshot {
+  max-width: 720px;
+  margin-top: 14px;
+  font-size: 0.98rem;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.summary-card {
+  min-height: 96px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.035)),
+    rgba(3, 8, 16, 0.48);
+}
+
+.summary-card strong {
+  display: block;
+  margin-top: 8px;
+  font-size: clamp(1.45rem, 3vw, 2.1rem);
+  line-height: 1;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  margin: 18px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(12, 17, 28, 0.86);
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.26);
+  backdrop-filter: blur(16px);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  max-width: 270px;
+  padding: 0 12px;
+  border: 1px solid rgba(59, 212, 199, 0.24);
+  border-radius: 999px;
+  background: rgba(59, 212, 199, 0.1);
+  color: var(--accent-dark);
+  font-size: 0.78rem;
+  font-weight: 900;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ghost-button,
+.danger-button {
+  position: relative;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 6px;
+  border: 1px solid var(--line-strong);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--ink);
+  font-weight: 850;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.ghost-button:hover {
+  border-color: rgba(59, 212, 199, 0.58);
+  background: rgba(59, 212, 199, 0.12);
+  box-shadow: 0 0 0 3px rgba(59, 212, 199, 0.08);
+}
+
+.ghost-button:active,
+.danger-button:active,
+.pick-button:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.danger-button {
+  border-color: rgba(255, 100, 112, 0.4);
+  color: #ffb1b7;
+}
+
+.danger-button:hover {
+  background: rgba(255, 100, 112, 0.1);
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(700px, 1.12fr) minmax(390px, 0.88fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.panel {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.02)),
+    var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.panel-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  min-height: 72px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.badge {
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(62, 224, 143, 0.22);
+  background: rgba(62, 224, 143, 0.1);
+  color: #8dffc5;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.badge.neutral {
+  border-color: rgba(59, 212, 199, 0.24);
+  background: rgba(59, 212, 199, 0.1);
+  color: var(--accent-dark);
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.mobile-standings {
+  display: none;
+}
+
+table {
+  width: 100%;
+  min-width: 650px;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  height: 56px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+  white-space: nowrap;
+}
+
+th {
+  height: 42px;
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+th:nth-child(1),
+td:nth-child(1),
+th:nth-child(2),
+td:nth-child(2) {
+  text-align: left;
+}
+
+tbody tr {
+  transition:
+    background 180ms ease,
+    transform 180ms ease;
+}
+
+tbody tr:hover {
+  background: rgba(255, 255, 255, 0.045);
+}
+
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+tbody tr.qualifier {
+  background: linear-gradient(90deg, rgba(62, 224, 143, 0.13), transparent 68%);
+}
+
+.rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.qualifier .rank {
+  background: var(--green);
+  color: #03100a;
+}
+
+.team-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 170px;
+  font-weight: 900;
+}
+
+.logo-frame {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.82)),
+    var(--team-color, var(--accent));
+  border: 2px solid color-mix(in srgb, var(--team-color, var(--accent)) 66%, white);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 0 20px color-mix(in srgb, var(--team-color, var(--accent)) 35%, transparent);
+}
+
+.logo-frame.small {
+  width: 24px;
+  height: 24px;
+}
+
+.team-mark {
+  width: 36px;
+  height: 36px;
+}
+
+.team-logo {
+  display: block;
+  width: 82%;
+  height: 82%;
+  object-fit: contain;
+}
+
+.team-sub {
+  display: block;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.compact-code {
+  display: none;
+}
+
+.movement {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 24px;
+  margin-left: 6px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.movement.up {
+  color: #8dffc5;
+  background: rgba(62, 224, 143, 0.12);
+}
+
+.movement.down {
+  color: #ffb1b7;
+  background: rgba(255, 100, 112, 0.12);
+}
+
+.movement.same {
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.points,
+.chance-value {
+  font-size: 1.12rem;
+  font-weight: 950;
+}
+
+.chance-cell {
+  min-width: 86px;
+}
+
+.chance-meter {
+  display: inline-grid;
+  gap: 5px;
+  min-width: 74px;
+}
+
+.chance-track {
+  width: 74px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.chance-fill {
+  display: block;
+  height: 100%;
+  width: var(--chance, 0%);
+  border-radius: inherit;
+  background: linear-gradient(90deg, #3ee08f, #3bd4c7);
+  transition: width 220ms ease;
+}
+
+.mobile-team-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.mobile-team-card:last-child {
+  border-bottom: 0;
+}
+
+.mobile-team-card .team-cell {
+  min-width: 0;
+  white-space: normal;
+}
+
+.mobile-team-top {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.mobile-points {
+  min-width: 58px;
+  text-align: right;
+}
+
+.mobile-points strong {
+  display: block;
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.mobile-points span {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.stat-chip {
+  min-height: 48px;
+  padding: 7px 5px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.07);
+  text-align: center;
+}
+
+.stat-chip span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.stat-chip strong {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.88rem;
+}
+
+.fixture-list {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  max-height: calc(100vh - 260px);
+  min-height: 480px;
+  overflow: auto;
+}
+
+.empty-state {
+  margin: 0;
+  padding: 18px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 8px;
+  color: var(--muted);
+  font-weight: 800;
+  text-align: center;
+}
+
+.fixture-card {
+  position: relative;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 13px;
+  padding: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  background:
+    linear-gradient(
+      104deg,
+      color-mix(in srgb, var(--team-a-color, #3bd4c7) 56%, #05070d) 0%,
+      color-mix(in srgb, var(--team-a-color, #3bd4c7) 38%, #05070d) 43%,
+      rgba(8, 12, 22, 0.95) 50%,
+      color-mix(in srgb, var(--team-b-color, #ff9a4a) 38%, #05070d) 57%,
+      color-mix(in srgb, var(--team-b-color, #ff9a4a) 56%, #05070d) 100%
+    );
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
+  overflow: hidden;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.fixture-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.12), transparent 23%, transparent 77%, rgba(255, 255, 255, 0.12)),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.055) 0 1px, transparent 1px 18px);
+  opacity: 0.38;
+  pointer-events: none;
+}
+
+.fixture-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.fixture-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow: 0 22px 46px rgba(0, 0, 0, 0.34);
+}
+
+.fixture-card:focus-visible {
+  outline: 2px solid rgba(148, 255, 244, 0.88);
+  outline-offset: 3px;
+}
+
+.fixture-card.selected {
+  animation: fixture-pulse 360ms ease;
+  border-color: rgba(59, 212, 199, 0.62);
+  box-shadow:
+    0 0 0 1px rgba(59, 212, 199, 0.18),
+    0 24px 52px rgba(0, 0, 0, 0.38);
+}
+
+.fixture-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.match-no {
+  color: #f8fbff;
+  font-size: 0.78rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.venue {
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.84rem;
+  font-weight: 750;
+}
+
+.date-chip {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #f8fbff;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.teams-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-height: 60px;
+}
+
+.team-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--ink);
+  font-weight: 950;
+}
+
+.fixture-card .team-pill {
+  gap: 10px;
+  font-size: 1.04rem;
+}
+
+.fixture-card .logo-frame.small {
+  width: 40px;
+  height: 40px;
+}
+
+.team-pill:last-child {
+  justify-content: flex-end;
+}
+
+.team-abbr {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vs {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(5, 7, 13, 0.7);
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.72rem;
+  font-weight: 950;
+}
+
+.result-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.pick-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 43px;
+  padding: 0 8px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 6px;
+  background: rgba(5, 7, 13, 0.66);
+  color: var(--ink);
+  font-weight: 900;
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    background 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.pick-button {
+  cursor: pointer;
+}
+
+.pick-button:hover {
+  border-color: rgba(255, 255, 255, 0.34);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.pick-button.active {
+  animation: button-pop 260ms ease;
+  border-color: rgba(255, 255, 255, 0.52);
+  background:
+    linear-gradient(120deg, rgba(59, 212, 199, 0.92), rgba(62, 224, 143, 0.86));
+  color: #03100c;
+  box-shadow:
+    0 0 0 3px rgba(59, 212, 199, 0.13),
+    0 10px 26px rgba(59, 212, 199, 0.18);
+}
+
+.pick-button.no-result.active {
+  background: linear-gradient(120deg, rgba(255, 154, 74, 0.94), rgba(244, 196, 48, 0.9));
+}
+
+.source-note {
+  margin: 16px 2px 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.math-note {
+  margin: 0;
+  padding: 12px 16px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.source-note a {
+  color: var(--accent-dark);
+  font-weight: 800;
+}
+
+.match-modal[hidden] {
+  display: none;
+}
+
+.match-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background:
+    radial-gradient(circle at 20% 15%, color-mix(in srgb, var(--team-a-color, #3bd4c7) 26%, transparent), transparent 34%),
+    radial-gradient(circle at 78% 12%, color-mix(in srgb, var(--team-b-color, #ff9a4a) 28%, transparent), transparent 34%),
+    rgba(1, 3, 8, 0.78);
+  backdrop-filter: blur(18px);
+}
+
+.match-dialog {
+  position: relative;
+  width: min(940px, 100%);
+  max-height: min(760px, calc(100vh - 40px));
+  overflow: auto;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.045)),
+    rgba(8, 12, 22, 0.78);
+  box-shadow:
+    0 36px 110px rgba(0, 0, 0, 0.64),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(24px) saturate(1.2);
+  opacity: 0;
+  transform: translateY(18px) scale(0.98);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.match-modal.is-open .match-dialog {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.match-dialog::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(115deg, rgba(255, 255, 255, 0.24), transparent 18%, transparent 72%, rgba(255, 255, 255, 0.08)),
+    linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.04));
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.modal-close {
+  position: sticky;
+  top: 12px;
+  float: right;
+  z-index: 3;
+  min-height: 34px;
+  margin: 12px 12px 0 0;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  background: rgba(5, 7, 13, 0.62);
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 850;
+  backdrop-filter: blur(12px);
+}
+
+#modalContent {
+  position: relative;
+  z-index: 1;
+}
+
+.modal-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: end;
+  min-height: 210px;
+  padding: 34px;
+  background:
+    linear-gradient(
+      105deg,
+      color-mix(in srgb, var(--team-a-color, #3bd4c7) 54%, #05070d) 0%,
+      rgba(8, 12, 22, 0.72) 50%,
+      color-mix(in srgb, var(--team-b-color, #ff9a4a) 54%, #05070d) 100%
+    );
+  overflow: hidden;
+}
+
+.modal-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(110deg, rgba(255, 255, 255, 0.22), transparent 22%, transparent 72%, rgba(255, 255, 255, 0.08)),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.055) 0 1px, transparent 1px 22px);
+  opacity: 0.46;
+  pointer-events: none;
+}
+
+.modal-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.modal-kicker {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.modal-hero h2 {
+  margin: 8px 0 4px;
+  font-size: clamp(3.2rem, 8vw, 6.5rem);
+  line-height: 0.86;
+}
+
+.modal-hero p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.modal-teams {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-teams > span {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(5, 7, 13, 0.64);
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.72rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.modal-team {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+}
+
+.modal-logo {
+  width: 76px;
+  height: 76px;
+}
+
+.modal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 14px;
+}
+
+.glass-card {
+  position: relative;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.035)),
+    rgba(255, 255, 255, 0.035);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 14px 40px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+}
+
+.glass-card::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 48%;
+  background: linear-gradient(105deg, rgba(255, 255, 255, 0.12), transparent 58%);
+  opacity: 0.36;
+  pointer-events: none;
+}
+
+.wide-card {
+  grid-column: 1 / -1;
+}
+
+.lean-row,
+.venue-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lean-row {
+  margin-top: 12px;
+}
+
+.lean-row strong {
+  font-size: 1.9rem;
+}
+
+.muted-row {
+  color: var(--muted);
+}
+
+.lean-track {
+  height: 10px;
+  margin: 8px 0;
+  overflow: hidden;
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, transparent 0 49.5%, rgba(255, 255, 255, 0.35) 49.5% 50.5%, transparent 50.5% 100%),
+    color-mix(in srgb, var(--team-b-color, #ff9a4a) 35%, rgba(255, 255, 255, 0.08));
+}
+
+.lean-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--team-a-color, #3bd4c7) 72%, white);
+}
+
+.fine-print,
+.empty-mini {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.mini-score {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.mini-score span {
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--muted);
+  text-align: center;
+  font-size: 0.76rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.mini-score strong {
+  color: var(--ink);
+  font-size: 1.45rem;
+}
+
+.meeting-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.meeting-list article {
+  display: grid;
+  gap: 3px;
+  padding: 11px 12px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.meeting-list span,
+.meeting-list small {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.meeting-list strong {
+  font-size: 0.98rem;
+}
+
+.venue-rows {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.venue-row {
+  padding: 9px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.venue-row span {
+  margin-right: auto;
+  font-weight: 900;
+}
+
+.venue-row small {
+  color: var(--muted);
+}
+
+.venue-logo {
+  width: 30px;
+  height: 30px;
+}
+
+@keyframes button-pop {
+  0% {
+    transform: scale(0.96);
+  }
+
+  62% {
+    transform: scale(1.035);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes fixture-pulse {
+  0% {
+    transform: scale(0.992);
+    filter: brightness(1.18);
+  }
+
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+@media (max-width: 1080px) {
+  .topbar,
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .fixture-list {
+    max-height: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .app-shell {
+    padding: 12px;
+  }
+
+  .topbar {
+    min-height: unset;
+    padding: 18px;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .toolbar-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .status-chip {
+    justify-content: center;
+    width: 100%;
+    max-width: none;
+  }
+
+  .panel-heading,
+  .fixture-top {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .badge,
+  .date-chip {
+    align-self: flex-start;
+  }
+
+  .result-buttons {
+    grid-template-columns: 1fr;
+  }
+
+  .table-wrap {
+    display: none;
+  }
+
+  .mobile-standings {
+    display: grid;
+  }
+
+  .stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .teams-row {
+    min-height: 54px;
+  }
+
+  .fixture-card .logo-frame.small {
+    width: 34px;
+    height: 34px;
+  }
+
+  .match-modal {
+    padding: 10px;
+    align-items: end;
+  }
+
+  .match-dialog {
+    width: 100%;
+    max-height: calc(100vh - 20px);
+  }
+
+  .modal-hero {
+    grid-template-columns: 1fr;
+    min-height: 230px;
+    padding: 28px 18px 22px;
+  }
+
+  .modal-hero h2 {
+    font-size: 4rem;
+  }
+
+  .modal-teams {
+    justify-content: space-between;
+  }
+
+  .modal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mini-score {
+    grid-template-columns: 1fr;
+  }
+
+  h1 {
+    font-size: 2.25rem;
+  }
+}
+
+/* ======================================================== */
+/* PREMIUM OVERRIDES & NEW FEATURES ADDED FOR DARK MODE     */
+/* ======================================================== */
+:root {
+  --bg-color: #0f172a;
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.15);
+  --glass-highlight: rgba(255, 255, 255, 0.25);
+  --accent: #d4af37;
+}
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  background-image: radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.15) 0%, transparent 50%), linear-gradient(135deg, #0f172a 0%, #000000 100%);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', serif;
+}
+
+h1 {
+  background: linear-gradient(to right, #ffffff, var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Match Banner */
+.fixture-card {
+  border-radius: 20px;
+  background: linear-gradient(135deg, 
+    color-mix(in srgb, var(--team-a-color) 40%, rgba(15, 23, 42, 0.8)), 
+    color-mix(in srgb, var(--team-b-color) 40%, rgba(15, 23, 42, 0.8))
+  ) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-top: 1px solid var(--glass-highlight) !important;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255,255,255,0.05) !important;
+  overflow: hidden;
+}
+
+.fixture-card::before {
+  content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent) !important;
+  transform: skewX(-20deg); transition: 0.6s; z-index: 0;
+}
+.fixture-card:hover::before { left: 150%; }
+
+.fixture-card .team-pill { font-size: 1.2rem; font-family: 'Playfair Display', serif; letter-spacing: 1px; }
+.fixture-card .logo-frame.small { width: 44px; height: 44px; }
+
+/* Modal Premium Overhaul */
+#modalContent { position: relative; z-index: 1; padding: 30px; }
+.match-modal[hidden] { display: none !important; }
+.match-dialog {
+  border: 1px solid var(--glass-border) !important; border-top: 1px solid var(--glass-highlight) !important; border-left: 1px solid var(--glass-highlight) !important;
+  border-radius: 24px !important;
+  background: linear-gradient(145deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.95)) !important;
+  box-shadow: 0 35px 100px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(255,255,255,0.05) !important;
+  backdrop-filter: blur(24px) !important;
+}
+
+.glow-orb { position: absolute; border-radius: 50%; filter: blur(70px); z-index: 0; opacity: 0.3; pointer-events: none; }
+.orb-1 { width: 250px; height: 250px; background: var(--team-a-color, #d4af37); top: -50px; left: -50px; }
+.orb-2 { width: 300px; height: 300px; background: var(--team-b-color, #3b82f6); bottom: -100px; right: -50px; }
+
+.match-header { text-align: center; margin-bottom: 30px; position: relative; }
+.match-header h2 {
+  font-size: 2.8rem; letter-spacing: 2px;
+  background: linear-gradient(to right, #ffffff, var(--accent));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: 12px; margin-top: 0;
+}
+.match-header .vs-text { color: var(--muted); font-size: 1.4rem; font-weight: 300; font-family: 'Playfair Display', serif; font-style: italic; -webkit-text-fill-color: var(--muted); }
+
+.venue-info {
+  display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--muted);
+  background: rgba(0,0,0,0.3); padding: 8px 16px; border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.05); font-weight: 500;
+}
+.venue-info svg { flex-shrink: 0; }
+
+.stats-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+
+.stat-card {
+  background: rgba(0, 0, 0, 0.3) !important; border: 1px solid rgba(255,255,255,0.05) !important; border-radius: 16px !important;
+  padding: 24px !important; position: relative; overflow: hidden; transition: transform 0.3s ease, background 0.3s ease;
+}
+.stat-card:hover { background: rgba(0, 0, 0, 0.4) !important; transform: translateY(-2px); }
+.stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--accent); opacity: 0.7; }
+
+.stat-title {
+  font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--accent); margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px; text-transform: uppercase; letter-spacing: 1px;
+}
+
+.h2h-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-weight: 500; font-size: 1.1rem; }
+.h2h-bar-wrapper { height: 10px; background: rgba(255,255,255,0.1); border-radius: 5px; overflow: hidden; display: flex; }
+.h2h-bar-1 { background: var(--team-a-color, #facc15); transition: width 1s ease-in-out; }
+.h2h-bar-2 { background: var(--team-b-color, #3b82f6); transition: width 1s ease-in-out; }
+
+.prob-container { display: flex; flex-direction: column; gap: 15px; }
+.prob-team { display: flex; align-items: center; gap: 15px; }
+.prob-name { width: 45px; font-weight: 600; letter-spacing: 1px; }
+.prob-track { flex: 1; height: 14px; background: rgba(0,0,0,0.5); border-radius: 7px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); position: relative; }
+.prob-fill { height: 100%; border-radius: 7px; position: relative; overflow: hidden; width: 0; transition: width 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); background: var(--team-bg); }
+.prob-fill::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); animation: shimmer 2s infinite; }
+.prob-value { width: 45px; text-align: right; font-family: 'Playfair Display', serif; font-weight: 700; color: var(--accent); font-size: 1.1rem; }
+
+@keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+/* Final responsive layer: keep the premium skin usable on phones. */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+button,
+.fixture-card {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+@media (max-width: 860px) {
+  .app-shell {
+    width: 100%;
+    padding: 14px;
+  }
+
+  .topbar {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    min-height: 0;
+    padding: 18px;
+    border-radius: 14px;
+  }
+
+  h1 {
+    max-width: 10ch;
+    font-size: clamp(2.25rem, 13vw, 4.2rem);
+    line-height: 0.88;
+  }
+
+  .snapshot {
+    max-width: 34rem;
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+
+  .summary-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .summary-card {
+    min-height: 76px;
+    padding: 12px;
+  }
+
+  .toolbar {
+    display: grid;
+    gap: 12px;
+    margin: 14px 0;
+    padding: 12px;
+    border-radius: 14px;
+  }
+
+  .toolbar-actions {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+  }
+
+  .status-chip {
+    grid-column: 1 / -1;
+    justify-content: center;
+    max-width: none;
+    width: 100%;
+  }
+
+  .ghost-button,
+  .danger-button,
+  .pick-button {
+    min-height: 44px;
+  }
+
+  .workspace {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .panel {
+    border-radius: 14px;
+  }
+
+  .fixture-list {
+    max-height: none;
+    min-height: 0;
+    padding: 12px;
+  }
+}
+
+@media (max-width: 620px) {
+  .app-shell {
+    padding: 10px;
+    padding-top: calc(min(46svh, 390px) + 18px);
+  }
+
+  .topbar,
+  .toolbar,
+  .panel {
+    border-radius: 12px;
+  }
+
+  .topbar {
+    padding: 16px;
+  }
+
+  .summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .summary-card {
+    min-height: 72px;
+    padding: 11px;
+  }
+
+  .summary-card strong {
+    font-size: 1.55rem;
+  }
+
+  .summary-label,
+  .section-kicker,
+  .eyebrow,
+  .meta {
+    font-size: 0.68rem;
+  }
+
+  .legend {
+    gap: 6px;
+  }
+
+  .legend .team-pill {
+    max-width: calc(50vw - 24px);
+  }
+
+  .toolbar-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ghost-button,
+  .danger-button {
+    padding-inline: 10px;
+    font-size: 0.82rem;
+  }
+
+  .panel-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 0;
+    padding: 14px;
+  }
+
+  .badge,
+  .date-chip {
+    align-self: flex-start;
+  }
+
+  .table-wrap {
+    display: none;
+  }
+
+  .mobile-standings {
+    display: grid;
+  }
+
+  .mobile-team-card {
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .mobile-team-top {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+
+  .mobile-team-card .team-cell {
+    gap: 8px;
+  }
+
+  .team-cell .team-mark {
+    width: 38px;
+    height: 38px;
+  }
+
+  .stat-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .stat-chip {
+    min-height: 44px;
+    padding: 7px 4px;
+  }
+
+  .stat-chip strong {
+    font-size: 0.82rem;
+  }
+
+  .fixture-list {
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .fixture-card {
+    gap: 12px;
+    padding: 12px;
+    border-radius: 14px !important;
+  }
+
+  .fixture-card .team-pill {
+    gap: 7px;
+    font-size: 1rem;
+    letter-spacing: 0;
+  }
+
+  .fixture-card .logo-frame.small {
+    width: 34px;
+    height: 34px;
+  }
+
+  .teams-row {
+    grid-template-columns: minmax(0, 1fr) 30px minmax(0, 1fr);
+    gap: 7px;
+    min-height: 48px;
+  }
+
+  .vs {
+    width: 30px;
+    height: 30px;
+    font-size: 0.66rem;
+  }
+
+  .result-buttons {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .pick-button {
+    min-height: 44px;
+    padding: 0 6px;
+    font-size: 0.82rem;
+  }
+
+  .source-note,
+  .math-note {
+    font-size: 0.76rem;
+    line-height: 1.45;
+  }
+
+  .match-modal {
+    padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+    place-items: end center;
+  }
+
+  .match-dialog {
+    width: 100%;
+    max-height: min(88vh, calc(100dvh - 18px));
+    border-radius: 22px 22px 0 0 !important;
+  }
+
+  .modal-close {
+    top: 8px;
+    margin: 8px 8px 0 0;
+    min-height: 38px;
+  }
+
+  #modalContent {
+    padding: 18px 14px 16px;
+  }
+
+  .match-header {
+    margin-bottom: 18px;
+  }
+
+  .match-header h2 {
+    font-size: clamp(2.1rem, 13vw, 3.2rem);
+    letter-spacing: 0;
+    line-height: 0.95;
+  }
+
+  .match-header .vs-text {
+    display: block;
+    margin: 2px 0;
+    font-size: 1.05rem;
+  }
+
+  .venue-info {
+    max-width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 7px 12px;
+    border-radius: 14px;
+    font-size: 0.8rem;
+    line-height: 1.35;
+  }
+
+  .stats-grid {
+    gap: 12px;
+  }
+
+  .stat-card {
+    padding: 16px !important;
+    border-radius: 14px !important;
+  }
+
+  .stat-title {
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.98rem;
+    line-height: 1.2;
+  }
+
+  .h2h-container,
+  .prob-team {
+    gap: 10px;
+  }
+
+  .h2h-container {
+    font-size: 0.92rem;
+  }
+
+  .prob-name,
+  .prob-value {
+    width: 38px;
+    font-size: 0.95rem;
+  }
+
+  .mini-score {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 360px) {
+  .app-shell {
+    padding: 8px;
+  }
+
+  h1 {
+    font-size: 2.35rem;
+  }
+
+  .summary-grid,
+  .toolbar-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .result-buttons {
+    grid-template-columns: 1fr;
+  }
+
+  .teams-row {
+    grid-template-columns: 1fr;
+    justify-items: stretch;
+    text-align: left;
+  }
+
+  .team-pill:last-child {
+    justify-content: flex-start;
+  }
+
+  .vs {
+    justify-self: start;
+    width: auto;
+    height: auto;
+    padding: 4px 9px;
+    border-radius: 999px;
+  }
+
+  .stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Fixed top mobile ladder: keep the table visible while picks scroll underneath. */
+@media (max-width: 620px) {
+  .workspace {
+    display: block;
+  }
+
+  .standings-panel {
+    position: fixed;
+    right: 8px;
+    left: 8px;
+    top: max(8px, env(safe-area-inset-top));
+    z-index: 18;
+    display: flex;
+    max-height: min(46svh, 390px);
+    min-height: 0;
+    flex-direction: column;
+    border-color: rgba(255, 255, 255, 0.24);
+    background:
+      linear-gradient(180deg, rgba(33, 42, 59, 0.98), rgba(13, 18, 29, 0.98)),
+      var(--surface);
+    box-shadow:
+      0 18px 48px rgba(0, 0, 0, 0.58),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+  }
+
+  .standings-panel .panel-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    min-height: 0;
+    padding: 10px 12px;
+  }
+
+  .standings-panel h2 {
+    margin-top: 1px;
+    font-size: 1.28rem;
+  }
+
+  .standings-panel .badge {
+    padding: 5px 8px;
+    font-size: 0.68rem;
+  }
+
+  .standings-panel .section-kicker {
+    font-size: 0.62rem;
+  }
+
+  .standings-panel .table-wrap {
+    display: block;
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+
+  .standings-panel .mobile-standings {
+    display: none;
+  }
+
+  .standings-panel table {
+    min-width: 0;
+    table-layout: fixed;
+    font-size: 0.68rem;
+  }
+
+  .standings-panel th,
+  .standings-panel td {
+    height: 27px;
+    padding: 0 2px;
+    font-size: 0.68rem;
+  }
+
+  .standings-panel th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    height: 24px;
+    background: rgba(20, 26, 39, 0.98);
+    color: rgba(210, 222, 246, 0.78);
+    font-size: 0.58rem;
+  }
+
+  .standings-panel th:nth-child(1),
+  .standings-panel td:nth-child(1) {
+    width: 30px;
+  }
+
+  .standings-panel th:nth-child(2),
+  .standings-panel td:nth-child(2) {
+    width: 58px;
+  }
+
+  .standings-panel th:nth-child(3),
+  .standings-panel td:nth-child(3),
+  .standings-panel th:nth-child(4),
+  .standings-panel td:nth-child(4),
+  .standings-panel th:nth-child(5),
+  .standings-panel td:nth-child(5),
+  .standings-panel th:nth-child(6),
+  .standings-panel td:nth-child(6) {
+    width: 25px;
+  }
+
+  .standings-panel th:nth-child(7),
+  .standings-panel td:nth-child(7) {
+    width: 34px;
+  }
+
+  .standings-panel th:nth-child(8),
+  .standings-panel td:nth-child(8) {
+    width: 48px;
+  }
+
+  .standings-panel th:nth-child(9),
+  .standings-panel td:nth-child(9) {
+    width: 44px;
+  }
+
+  .standings-panel .team-cell {
+    gap: 4px;
+    min-width: 0;
+    font-size: 0.72rem;
+  }
+
+  .standings-panel .team-mark {
+    width: 20px;
+    height: 20px;
+  }
+
+  .standings-panel .team-name-full,
+  .standings-panel .team-sub,
+  .standings-panel .movement,
+  .standings-panel .chance-track {
+    display: none;
+  }
+
+  .standings-panel .compact-code {
+    display: inline;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--ink);
+    font-size: 0.68rem;
+    font-weight: 950;
+    text-overflow: ellipsis;
+  }
+
+  .standings-panel .rank {
+    width: 21px;
+    height: 21px;
+    font-size: 0.72rem;
+  }
+
+  .standings-panel .points,
+  .standings-panel .chance-value {
+    font-size: 0.8rem;
+  }
+
+  .standings-panel .chance-cell,
+  .standings-panel .chance-meter {
+    min-width: 0;
+  }
+
+  .standings-panel .math-note {
+    display: none;
+  }
+
+  .fixtures-panel {
+    position: relative;
+    z-index: 1;
+    margin-top: 10px;
+  }
+
+  .fixtures-panel .panel-heading {
+    position: static;
+    top: auto;
+    z-index: 3;
+    background: linear-gradient(180deg, rgba(32, 39, 54, 0.98), rgba(23, 29, 42, 0.98));
+    backdrop-filter: blur(14px);
+  }
+}
+
+@media (max-width: 390px) {
+  .standings-panel {
+    max-height: min(46svh, 372px);
+  }
+
+  .standings-panel th,
+  .standings-panel td {
+    height: 25px;
+    font-size: 0.63rem;
+  }
+
+  .standings-panel .team-mark {
+    width: 18px;
+    height: 18px;
+  }
+
+  .standings-panel .rank {
+    width: 19px;
+    height: 19px;
+    font-size: 0.66rem;
+  }
+
+  .standings-panel .points,
+  .standings-panel .chance-value {
+    font-size: 0.72rem;
+  }
+
+  .app-shell {
+    padding-top: calc(min(46svh, 372px) + 16px);
+    padding-bottom: 8px;
+  }
+}
+
+    </style>
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">IPL 2026</p>
+          <h1>Points Table Predictor</h1>
+          <p class="snapshot">Fast live refresh every 30 seconds when online. Future NRR is held at the current value.</p>
+        </div>
+        <div class="summary-grid" aria-label="Prediction summary">
+          <section class="summary-card">
+            <span class="summary-label">Remaining</span>
+            <strong id="remainingCount">17</strong>
+          </section>
+          <section class="summary-card">
+            <span class="summary-label">Picked</span>
+            <strong id="pickedCount">0</strong>
+          </section>
+          <section class="summary-card">
+            <span class="summary-label">Top seed</span>
+            <strong id="topSeed">-</strong>
+          </section>
+          <section class="summary-card">
+            <span class="summary-label">Live data</span>
+            <strong id="liveMode">On</strong>
+          </section>
+        </div>
+      </header>
+
+      <section class="toolbar" aria-label="Prediction actions">
+        <div class="legend" id="legend"></div>
+        <div class="toolbar-actions">
+          <span class="status-chip" id="liveStatus">Checking live data...</span>
+          <button class="ghost-button" id="refreshLive" type="button">Refresh live</button>
+          <button class="ghost-button" id="copyShareLink" type="button">Copy link</button>
+          <button class="ghost-button" id="copyScenario" type="button">Copy scenario</button>
+          <button class="danger-button" id="resetPicks" type="button">Reset picks</button>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <section class="panel standings-panel" aria-labelledby="standingsTitle">
+          <div class="panel-heading">
+            <div>
+              <p class="section-kicker">Projected standings</p>
+              <h2 id="standingsTitle">Points table</h2>
+            </div>
+            <span class="badge">Top 4 qualify</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Team</th>
+                  <th>P</th>
+                  <th>W</th>
+                  <th>L</th>
+                  <th>NR</th>
+                  <th>Pts</th>
+                  <th>NRR</th>
+                  <th>Chance</th>
+                </tr>
+              </thead>
+              <tbody id="standingsBody"></tbody>
+            </table>
+          </div>
+          <div class="mobile-standings" id="mobileStandings"></div>
+          <p class="math-note">
+            Chances assume every unpicked remaining match is a 50/50 result. Fixed NRR is used as the tiebreaker.
+          </p>
+        </section>
+
+        <section class="panel fixtures-panel" aria-labelledby="fixturesTitle">
+          <div class="panel-heading">
+            <div>
+              <p class="section-kicker">League stage</p>
+              <h2 id="fixturesTitle">Choose results</h2>
+            </div>
+            <span class="badge neutral">Win: 2 pts</span>
+          </div>
+          <div class="fixture-list" id="fixtureList"></div>
+        </section>
+      </section>
+
+      <p class="source-note">
+        Live sources: <a href="https://crex.com/series/indian-premier-league-2026-1PW/points-table">CREX points table</a>
+        and <a href="https://www.cricbuzz.com/cricket-series/9241/matches">Cricbuzz fixtures</a>.
+        Historical match notes use <a href="https://cricsheet.org/">Cricsheet</a>.
+      </p>
+    </main>
+
+    <div class="match-modal" id="matchModal" hidden>
+      <button class="modal-backdrop" id="modalBackdrop" type="button" aria-label="Close match preview"></button>
+      <section class="match-dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <button class="modal-close" id="modalClose" type="button" aria-label="Close match preview">Close</button>
+        <div id="modalContent"></div>
+      </section>
+    </div>
+
+    <template id="teamBadgeTemplate">
+      <span class="team-pill">
+        <span class="logo-frame small"><img class="team-logo" alt="" /></span>
+        <span class="team-abbr"></span>
+      </span>
+    </template>
+
+    <script>
+window.MATCH_INTEL = {
+  "58": {
+    "source": "Cricsheet IPL JSON, generated 2026-05-14",
+    "h2h": {
+      "total": 35,
+      "wins": {
+        "PBKS": 17,
+        "MI": 17
+      },
+      "noResult": 1
+    },
+    "cityH2h": {
+      "total": 1,
+      "wins": {
+        "PBKS": 1,
+        "MI": 0
+      },
+      "noResult": 0
+    },
+    "venueRecords": {
+      "PBKS": {
+        "matches": 14,
+        "wins": 6,
+        "losses": 7,
+        "noResult": 1
+      },
+      "MI": {
+        "matches": 1,
+        "wins": 0,
+        "losses": 1,
+        "noResult": 0
+      }
+    },
+    "previousAtVenue": [
+      {
+        "date": "2013-05-18",
+        "city": "Dharamsala",
+        "venue": "Himachal Pradesh Cricket Association Stadium",
+        "teams": [
+          "PBKS",
+          "MI"
+        ],
+        "winner": "PBKS",
+        "result": "PBKS won by 50 runs"
+      }
+    ],
+    "recentMeetings": [
+      {
+        "date": "2026-04-16",
+        "city": "Mumbai",
+        "venue": "Wankhede Stadium, Mumbai",
+        "teams": [
+          "MI",
+          "PBKS"
+        ],
+        "winner": "PBKS",
+        "result": "PBKS won by 7 wickets"
+      },
+      {
+        "date": "2025-06-01",
+        "city": "Ahmedabad",
+        "venue": "Narendra Modi Stadium, Ahmedabad",
+        "teams": [
+          "MI",
+          "PBKS"
+        ],
+        "winner": "PBKS",
+        "result": "PBKS won by 5 wickets"
+      },
+      {
+        "date": "2025-05-26",
+        "city": "Jaipur",
+        "venue": "Sawai Mansingh Stadium, Jaipur",
+        "teams": [
+          "MI",
+          "PBKS"
+        ],
+        "winner": "PBKS",
+        "result": "PBKS won by 7 wickets"
+      },
+      {
+        "date": "2024-04-18",
+        "city": "Mohali",
+        "venue": "Maharaja Yadavindra Singh International Cricket Stadium, Mullanpur",
+        "teams": [
+          "MI",
+          "PBKS"
+        ],
+        "winner": "MI",
+        "result": "MI won by 9 runs"
+      }
+    ]
+  },
+  "59": {
+    "source": "Cricsheet IPL JSON, generated 2026-05-14",
+    "h2h": {
+      "total": 7,
+      "wins": {
+        "LSG": 3,
+        "CSK": 3
+      },
+      "noResult": 1
+    },
+    "cityH2h": {
+      "total": 3,
+      "wins": {
+        "LSG": 1,
+        "CSK": 1
+      },
+      "noResult": 1
+    },
+    "venueRecords": {
+      "LSG": {
+        "matches": 26,
+        "wins": 10,
+        "losses": 14,
+        "noResult": 2
+      },
+      "CSK": {
+        "matches": 3,
+        "wins": 1,
+        "losses": 1,
+        "noResult": 1
+      }
+    },
+    "previousAtVenue": [
+      {
+        "date": "2025-04-14",
+        "city": "Lucknow",
+        "venue": "Bharat Ratna Shri Atal Bihari Vajpayee Ekana Cricket Stadium, Lucknow",
+        "teams": [
+          "LSG",
+          "CSK"
+        ],
+        "winner": "CSK",
+        "result": "CSK won by 5 wickets"
+      },
+      {
+        "date": "2024-04-19",
+        "city": "Lucknow",
+        "venue": "Bharat Ratna Shri Atal Bihari Vajpayee Ekana Cricket Stadium, Lucknow",
+        "teams": [
+          "CSK",
+          "LSG"
+        ],
+        "winner": "LSG",
+        "result": "LSG won by 8 wickets"
+      },
+      {
+        "date": "2023-05-03",
+        "city": "Lucknow",
+        "venue": "Bharat Ratna Shri Atal Bihari Vajpayee Ekana Cricket Stadium, Lucknow",
+        "teams": [
+          "LSG",
+          "CSK"
+        ],
+        "winner": null,
+        "result": "No result"
+      }
+    ],
+    "recentMeetings": [
+      {
+        "date": "2026-05-10",
+        "city": "Chennai",
+        "venue": "MA Chidambaram Stadium, Chepauk, Chennai",
+        "teams": [
+          "LSG",
+          "CSK"
+        ],
+        "winner": "CSK",
+        "result": "CSK won by 5 wickets"
+      },
+      {
+        "date": "2025-04-14",
+        "city": "Lucknow",
+        "venue": "Bharat Ratna Shri Atal Bihari Vajpayee Ekana Cricket Stadium, Lucknow",
+        "teams": [
+          "LSG",
+          "CSK"
+        ],
+        "winner": "CSK",
+        "result": "CSK won by 5 wickets"
+      },
+      {
+        "date": "2024-04-23",
+        "city": "Chennai",
+        "venue": "MA Chidambaram Stadium, Chepauk, Chennai",
+        "teams": [
+          "CSK",
+          "LSG"
+        ],
+        "winner": "LSG",
+        "result": "LSG won by 6 wickets"
+      },
+      {
+        "date": "2024-04-19",
+        "city": "Lucknow",
+        "venue": "Bharat Ratna Shri Atal Bihari Vajpayee Ekana Cricket Stadium, Lucknow",
+        "teams": [
+          "CSK",
+          "LSG"
+        ],
+        "winner": "LSG",
+        "result": "LSG won by 8 wickets"
+      }
+    ]
+  },
+  "60": {
+    "source": "Cricsheet IPL JSON, generated 2026-05-14",
+    "h2h": {
+      "total": 5,
+      "wins": {
+        "KKR": 1,
+        "GT": 4
+      },
+      "noResult": 0
+    },
+    "cityH2h": {
+      "total": 2,
+      "wins": {
+        "KKR": 0,
+        "GT": 2
+      },
+      "noResult": 0
+    },
+    "venueRecords": {
+      "KKR": {
+        "matches": 90,
+        "wins": 50,
+        "losses": 38,
+        "noResult": 2
+      },
+      "GT": {
+        "matches": 3,
+        "wins": 3,
+        "losses": 0,
+        "noResult": 0
+      }
+    },
+    "previousAtVenue": [
+      {
+        "date": "2025-04-21",
+        "city": "Kolkata",
+        "venue": "Eden Gardens, Kolkata",
+        "teams": [
+          "GT",
+          "KKR"
+        ],
+        "winner": "GT",
+        "result": "GT won by 39 runs"
+      },
+      {
+        "date": "2023-04-29",
+        "city": "Kolkata",
+        "venue": "Eden Gardens, Kolkata",
+        "teams": [
+          "KKR",
+          "GT"
+        ],
+        "winner": "GT",
+        "result": "GT won by 7 wickets"
+      }
+    ],
+    "recentMeetings": [
+      {
+        "date": "2026-04-17",
+        "city": "Ahmedabad",
+        "venue": "Narendra Modi Stadium, Ahmedabad",
+        "teams": [
+          "KKR",
+          "GT"
+        ],
+        "winner": "GT",
+        "result": "GT won by 5 wickets"
+      },
+      {
+        "date": "2025-04-21",
+        "city": "Kolkata",
+        "venue": "Eden Gardens, Kolkata",
+        "teams": [
+          "GT",
+          "KKR"
+        ],
+        "winner": "GT",
+        "result": "GT won by 39 runs"
+      },
+      {
+        "date": "2023-04-29",
+        "city": "Kolkata",
+        "venue": "Eden Gardens, Kolkata",
+        "teams": [
+          "KKR",
+          "GT"
+        ],
+        "winner": "GT",
+        "result": "GT won by 7 wickets"
+      },
+      {
+        "date": "2023-04-09",
+        "city": "Ahmedabad",
+        "venue": "Narendra Modi Stadium, Ahmedabad",
+        "teams": [
+          "GT",
+          "KKR"
+        ],
+        "winner": "KKR",
+        "result": "KKR won by 3 wickets"
+      }
+    ]
+  },
+  "61": {
+    "source": "Cricsheet IPL JSON, generated 2026-05-14",
+    "h2h": {
+      "total": 37,
+      "wins": {
+        "PBKS": 18,
+        "RCB": 19
+      },
+      "noResult": 0
+    },
+    "cityH2h": {
+      "total": 2,
+      "wins": {
+        "PBKS": 1,
+        "RCB": 1
+      },
+      "noResult": 0
+    },
+    "venueRecords": {
+      "PBKS": {
+        "matches": 14,
+        "wins": 6,
+        "losses": 7,
+        "noResult": 1
+      },
+      "RCB": {
+        "matches": 2,
+        "wins": 1,
+        "losses": 1,
+        "noResult": 0
+      }
+    },
+    "previousAtVenue": [
+      {
+        "date": "2024-05-09",
+        "city": "Dharamsala",
+        "venue": "Himachal Pradesh Cricket Association Stadium, Dharamsala",
+        "teams": [
+          "RCB",
+          "PBKS"
+        ],
+        "winner": "RCB",
+        "result": "RCB won by 60 runs"
+      },
+      {
+        "date": "2011-05-17",
+        "city": "Dharamsala",
+        "venue": "Himachal Pradesh Cricket Association Stadium",
+        "teams": [
+          "PBKS",
+          "RCB"
+        ],
+        "winner": "PBKS",
+        "result": "PBKS won by 111 runs"
+      }
+    ],
+    "recentMeetings": [
+      {
+        "date": "2025-06-03",
+        "city": "Ahmedabad",
+        "venue": "Narendra Modi Stadium, Ahmedabad",
+        "teams": [
+          "RCB",
+          "PBKS"
+        ],
+        "winner": "RCB",
+        "result": "RCB won by 6 runs"
+      },
+      {
+        "date": "2025-05-29",
+        "city": "New Chandigarh",
+        "venue": "Maharaja Yadavindra Singh International Cricket Stadium, Mullanpur",
+        "teams": [
+          "PBKS",
+          "RCB"
+        ],
+        "winner": "RCB",
+        "result": "RCB won by 8 wickets"
+      },
+      {
+        "date": "2025-04-20",
+        "city": "Mohali",
+        "venue": "Maharaja Yadavindra Singh International Cricket Stadium, Mullanpur",
+        "teams": [
+          "PBKS",
+          "RCB"
+        ],
+        "winner": "RCB",
+        "result": "RCB won by 7 wickets"
+      },
+      {
+        "date": "2025-04-18",
+        "city": "Bengaluru",
+        "venue": "M Chinnaswamy Stadium, Bengaluru",
+        "teams": [
+          "RCB",
+          "PBKS"
+        ],
+        "winner": "PBKS",
+        "result": "PBKS won by 5 wickets"
+      }
+    ]
+  },
+  "62": {
+    "source": "Cricsheet IPL JSON, generated 2026-05-14",
+    "h2h": {
+      "total": 31,
+      "wins": {
+        "DC": 15,
+        "RR": 15
+      },
+      "noResult": 1
+    },
+    "cityH2h": {
+      "total": 10,
+      "wins": {
+        "DC": 6,
+        "RR": 3
+      },
+      "noResult": 1
+    },
+    "venueRecords": {
+      "DC": {
+        "matches": 82,
+        "wins": 33,
+        "losses": 47,
+        "noResult": 2
+      },
+      "RR": {
+        "matches": 14,
+        "wins": 6,
+        "losses": 7,
+        "noResult": 1
+      }
+    },
+    "previousAtVenue": [
+      {
+        "date": "2025-04-16",
+        "city": "Delhi",
+        "venue": "Arun Jaitley Stadium, Delhi",
+        "teams": [
+          "DC",
+          "RR"
+        ],
+        "winner": null,
+        "result": "No result"
+      },
+      {
+        "date": "2024-05-07",
+        "city": "Delhi",
+        "venue": "Arun Jaitley Stadium, Delhi",
+        "teams": [
+          "DC",
+          "RR"
+        ],
+        "winner": "DC",
+        "result": "DC won by 20 runs"
+      },
+      {
+        "date": "2019-05-04",
+        "city": "Delhi",
+        "venue": "Arun Jaitley Stadium",
+        "teams": [
+          "RR",
+          "DC"
+        ],
+        "winner": "DC",
+        "result": "DC won by 5 wickets"
+      }
+    ],
+    "recentMeetings": [
+      {
+        "date": "2026-05-01",
+        "city": "Jaipur",
+        "venue": "Sawai Mansingh Stadium, Jaipur",
+        "teams": [
+          "RR",
+          "DC"
+        ],
+        "winner": "DC",
+        "result": "DC won by 7 wickets"
+      },
+      {
+        "date": "2025-04-16",
+        "city": "Delhi",
+        "venue": "Arun Jaitley Stadium, Delhi",
+        "teams": [
+          "DC",
+          "RR"
+        ],
+        "winner": null,
+        "result": "No result"
+      },
+      {
+        "date": "2024-05-07",
+        "city": "Delhi",
+        "venue": "Arun Jaitley Stadium, Delhi",
+        "teams": [
+          "DC",
+          "RR"
+        ],
+        "winner": "DC",
+        "result": "DC won by 20 runs"
+      },
+      {
+        "date": "2024-03-28",
+        "city": "Jaipur",
+        "venue": "Sawai Mansingh Stadium, Jaipur",
+        "teams": [
+          "RR",
+          "DC"
+        ],
+        "winner": "RR",
+        "result": "RR won by 12 runs"
+      }
+    ]
+  },
+  "63": {
+    "source": "Cricsheet IPL JSON, generated 2026-05-14",
+    "h2h": {
+      "total": 23,
+      "wins": {
+        "CSK": 15,
+        "SRH": 8
+      },
+      "noResult": 0
+    },
+    "cityH2h": {
+      "total": 6,
+      "wins": {
+        "CSK": 5,
+        "SRH": 1
+      },
+      "noResult": 0
+    },
+    "venueRecords": {
+      "CSK": {
+        "matches": 75,
+        "wins": 50,
+        "losses": 24,
+        "noResult": 1
+      },
+      "SRH": {
+        "matches": 13,
+        "wins": 3,
+        "losses": 9,
+        "noResult": 1
+      }
+    },
+    "previousAtVenue": [
+      {
+        "date": "2025-04-25",
+        "city": "Chennai",
+        "venue": "MA Chidambaram Stadium, Chepauk, Chennai",
+        "teams": [
+          "CSK",
+          "SRH"
+        ],
+        "winner": "SRH",
+        "result": "SRH won by 5 wickets"
+      },
+      {
+        "date": "2024-04-28",
+        "city": "Chennai",
+        "venue": "MA Chidambaram Stadium, Chepauk, Chennai",
+        "teams": [
+          "CSK",
+          "SRH"
+        ],
+        "winner": "CSK",
+        "result": "CSK won by 78 runs"
+      },
+      {
+        "date": "2023-04-21",
+        "city": "Chennai",
+        "venue": "MA Chidambaram Stadium, Chepauk, Chennai",
+        "teams": [
+          "SRH",
+          "CSK"
+        ],
+        "winner": "CSK",
+        "result": "CSK won by 7 wickets"
+      }
+    ],
+    "recentMeetings": [
+      {
+        "date": "2026-04-18",
+        "city": "Hyderabad",
+        "venue": "Rajiv Gandhi International Stadium, Uppal, Hyderabad",
+        "teams": [
+          "SRH",
+          "CSK"
+        ],
+        "winner": "SRH",
+        "result": "SRH won by 10 runs"
+      },
+      {
+        "date": "2025-04-25",
+        "city": "Chennai",
+        "venue": "MA Chidambaram Stadium, Chepauk, Chennai",
+        "teams": [
+          "CSK",
+          "SRH"
+        ],
+        "winner": "SRH",
+        "result": "SRH won by 5 wickets"
+      },
+      {
+        "date": "2024-04-28",
+        "city": "Chennai",
+        "venue": "MA Chidambaram Stadium, Chepauk, Chennai",
+        "teams": [
+          "CSK",
+          "SRH"
+        ],
+        "winner": "CSK",
+        "result": "CSK won by 78 runs"
+      },
+      {
+        "date": "2024-04-05",
+        "city": "Hyderabad",
+        "venue": "Rajiv Gandhi International Stadium, Uppal, Hyderabad",
+        "teams": [
+          "CSK",
+          "SRH"
+        ],
+        "winner": "SRH",
+        "result": "SRH won by 6 wickets"
+      }
+    ]
+  },
+  "64": {
+    "source": "Cricsheet IPL JSON, generated 2026-05-14",
+    "h2h": {
+      "total": 7,
+      "wins": {
+        "RR": 5,
+        "LSG": 2
+      },
+      "noResult": 0
+    },
+    "cityH2h": {
+      "total": 3,
+      "wins": {
+        "RR": 1,
+        "LSG": 2
+      },
+      "noResult": 0
+    },
+    "venueRecords": {
+      "RR": {
+        "matches": 59,
+        "wins": 32,
+        "losses": 27,
+        "noResult": 0
+      },
+      "LSG": {
+        "matches": 3,
+        "wins": 2,
+        "losses": 1,
+        "noResult": 0
+      }
+    },
+    "previousAtVenue": [
+      {
+        "date": "2025-04-19",
+        "city": "Jaipur",
+        "venue": "Sawai Mansingh Stadium, Jaipur",
+        "teams": [
+          "LSG",
+          "RR"
+        ],
+        "winner": "LSG",
+        "result": "LSG won by 2 runs"
+      },
+      {
+        "date": "2024-03-24",
+        "city": "Jaipur",
+        "venue": "Sawai Mansingh Stadium, Jaipur",
+        "teams": [
+          "RR",
+          "LSG"
+        ],
+        "winner": "RR",
+        "result": "RR won by 20 runs"
+      },
+      {
+        "date": "2023-04-19",
+        "city": "Jaipur",
+        "venue": "Sawai Mansingh Stadium, Jaipur",
+        "teams": [
+          "LSG",
+          "RR"
+        ],
+        "winner": "LSG",
+        "result": "LSG won by 10 runs"
+      }
+    ],
+    "recentMeetings": [
+      {
+        "date": "2026-04-22",
+        "city": "Lucknow",
+        "venue": "Bharat Ratna Shri Atal Bihari Vajpayee Ekana Cricket Stadium, Lucknow",
+        "teams": [
+          "RR",
+          "LSG"
+        ],
+        "winner": "RR",
+        "result": "RR won by 40 runs"
+      },
+      {
+        "date": "2025-04-19",
+        "city": "Jaipur",
+        "venue": "Sawai Mansingh Stadium, Jaipur",
+        "teams": [
+          "LSG",
+          "RR"
+        ],
+        "winner": "LSG",
+        "result": "LSG won by 2 runs"
+      },
+      {
+        "date": "2024-04-27",
+        "city": "Lucknow",
+        "venue": "Bharat Ratna Shri Atal Bihari Vajpayee Ekana Cricket Stadium, Lucknow",
+        "teams": [
+          "LSG",
+          "RR"
+        ],
+        "winner": "RR",
+        "result": "RR won by 7 wickets"
+      },
+      {
+        "date": "2024-03-24",
+        "city": "Jaipur",
+        "venue": "Sawai Mansingh Stadium, Jaipur",
+        "teams": [
+          "RR",
+          "LSG"
+        ],
+        "winner": "RR",
+        "result": "RR won by 20 runs"
+      }
+    ]
+  },
+  "65": {
+    "source": "Cricsheet IPL JSON, generated 2026-05-14",
+    "h2h": {
+      "total": 36,
+      "wins": {
+        "KKR": 11,
+        "MI": 25
+      },
+      "noResult": 0
+    },
+    "cityH2h": {
+      "total": 11,
+      "wins": {
+        "KKR": 4,
+        "MI": 7
+      },
+      "noResult": 0
+    },
+    "venueRecords": {
+      "KKR": {
+        "matches": 90,
+        "wins": 50,
+        "losses": 38,
+        "noResult": 2
+      },
+      "MI": {
+        "matches": 14,
+        "wins": 10,
+        "losses": 4,
+        "noResult": 0
+      }
+    },
+    "previousAtVenue": [
+      {
+        "date": "2024-05-11",
+        "city": "Kolkata",
+        "venue": "Eden Gardens, Kolkata",
+        "teams": [
+          "KKR",
+          "MI"
+        ],
+        "winner": "KKR",
+        "result": "KKR won by 18 runs"
+      },
+      {
+        "date": "2019-04-28",
+        "city": "Kolkata",
+        "venue": "Eden Gardens",
+        "teams": [
+          "KKR",
+          "MI"
+        ],
+        "winner": "KKR",
+        "result": "KKR won by 34 runs"
+      },
+      {
+        "date": "2018-05-09",
+        "city": "Kolkata",
+        "venue": "Eden Gardens",
+        "teams": [
+          "MI",
+          "KKR"
+        ],
+        "winner": "MI",
+        "result": "MI won by 102 runs"
+      }
+    ],
+    "recentMeetings": [
+      {
+        "date": "2026-03-29",
+        "city": "Mumbai",
+        "venue": "Wankhede Stadium, Mumbai",
+        "teams": [
+          "KKR",
+          "MI"
+        ],
+        "winner": "MI",
+        "result": "MI won by 6 wickets"
+      },
+      {
+        "date": "2025-03-31",
+        "city": "Mumbai",
+        "venue": "Wankhede Stadium, Mumbai",
+        "teams": [
+          "KKR",
+          "MI"
+        ],
+        "winner": "MI",
+        "result": "MI won by 8 wickets"
+      },
+      {
+        "date": "2024-05-11",
+        "city": "Kolkata",
+        "venue": "Eden Gardens, Kolkata",
+        "teams": [
+          "KKR",
+          "MI"
+        ],
+        "winner": "KKR",
+        "result": "KKR won by 18 runs"
+      },
+      {
+        "date": "2024-05-03",
+        "city": "Mumbai",
+        "venue": "Wankhede Stadium, Mumbai",
+        "teams": [
+          "KKR",
+          "MI"
+        ],
+        "winner": "KKR",
+        "result": "KKR won by 24 runs"
+      }
+    ]
+  },
+  "66": {
+    "source": "Cricsheet IPL JSON, generated 2026-05-14",
+    "h2h": {
+      "total": 9,
+      "wins": {
+        "CSK": 4,
+        "GT": 5
+      },
+      "noResult": 0
+    },
+    "cityH2h": {
+      "total": 4,
+      "wins": {
+        "CSK": 2,
+        "GT": 2
+      },
+      "noResult": 0
+    },
+    "venueRecords": {
+      "CSK": {
+        "matches": 6,
+        "wins": 2,
+        "losses": 4,
+        "noResult": 0
+      },
+      "GT": {
+        "matches": 29,
+        "wins": 17,
+        "losses": 12,
+        "noResult": 0
+      }
+    },
+    "previousAtVenue": [
+      {
+        "date": "2025-05-25",
+        "city": "Ahmedabad",
+        "venue": "Narendra Modi Stadium, Ahmedabad",
+        "teams": [
+          "CSK",
+          "GT"
+        ],
+        "winner": "CSK",
+        "result": "CSK won by 83 runs"
+      },
+      {
+        "date": "2024-05-10",
+        "city": "Ahmedabad",
+        "venue": "Narendra Modi Stadium, Ahmedabad",
+        "teams": [
+          "GT",
+          "CSK"
+        ],
+        "winner": "GT",
+        "result": "GT won by 35 runs"
+      },
+      {
+        "date": "2023-05-29",
+        "city": "Ahmedabad",
+        "venue": "Narendra Modi Stadium, Ahmedabad",
+        "teams": [
+          "GT",
+          "CSK"
+        ],
+        "winner": "CSK",
+        "result": "CSK won by 5 wickets"
+      }
+    ],
+    "recentMeetings": [
+      {
+        "date": "2026-04-26",
+        "city": "Chennai",
+        "venue": "MA Chidambaram Stadium, Chepauk, Chennai",
+        "teams": [
+          "CSK",
+          "GT"
+        ],
+        "winner": "GT",
+        "result": "GT won by 8 wickets"
+      },
+      {
+        "date": "2025-05-25",
+        "city": "Ahmedabad",
+        "venue": "Narendra Modi Stadium, Ahmedabad",
+        "teams": [
+          "CSK",
+          "GT"
+        ],
+        "winner": "CSK",
+        "result": "CSK won by 83 runs"
+      },
+      {
+        "date": "2024-05-10",
+        "city": "Ahmedabad",
+        "venue": "Narendra Modi Stadium, Ahmedabad",
+        "teams": [
+          "GT",
+          "CSK"
+        ],
+        "winner": "GT",
+        "result": "GT won by 35 runs"
+      },
+      {
+        "date": "2024-03-26",
+        "city": "Chennai",
+        "venue": "MA Chidambaram Stadium, Chepauk, Chennai",
+        "teams": [
+          "CSK",
+          "GT"
+        ],
+        "winner": "CSK",
+        "result": "CSK won by 63 runs"
+      }
+    ]
+  },
+  "67": {
+    "source": "Cricsheet IPL JSON, generated 2026-05-14",
+    "h2h": {
+      "total": 26,
+      "wins": {
+        "SRH": 13,
+        "RCB": 12
+      },
+      "noResult": 1
+    },
+    "cityH2h": {
+      "total": 9,
+      "wins": {
+        "SRH": 5,
+        "RCB": 3
+      },
+      "noResult": 1
+    },
+    "venueRecords": {
+      "SRH": {
+        "matches": 64,
+        "wins": 38,
+        "losses": 24,
+        "noResult": 2
+      },
+      "RCB": {
+        "matches": 9,
+        "wins": 3,
+        "losses": 5,
+        "noResult": 1
+      }
+    },
+    "previousAtVenue": [
+      {
+        "date": "2024-04-25",
+        "city": "Hyderabad",
+        "venue": "Rajiv Gandhi International Stadium, Uppal, Hyderabad",
+        "teams": [
+          "RCB",
+          "SRH"
+        ],
+        "winner": "RCB",
+        "result": "RCB won by 35 runs"
+      },
+      {
+        "date": "2023-05-18",
+        "city": "Hyderabad",
+        "venue": "Rajiv Gandhi International Stadium, Uppal, Hyderabad",
+        "teams": [
+          "SRH",
+          "RCB"
+        ],
+        "winner": "RCB",
+        "result": "RCB won by 8 wickets"
+      },
+      {
+        "date": "2019-03-31",
+        "city": "Hyderabad",
+        "venue": "Rajiv Gandhi International Stadium",
+        "teams": [
+          "SRH",
+          "RCB"
+        ],
+        "winner": "SRH",
+        "result": "SRH won by 118 runs"
+      }
+    ],
+    "recentMeetings": [
+      {
+        "date": "2026-03-28",
+        "city": "Bengaluru",
+        "venue": "M Chinnaswamy Stadium, Bengaluru",
+        "teams": [
+          "SRH",
+          "RCB"
+        ],
+        "winner": "RCB",
+        "result": "RCB won by 6 wickets"
+      },
+      {
+        "date": "2025-05-23",
+        "city": "Lucknow",
+        "venue": "Bharat Ratna Shri Atal Bihari Vajpayee Ekana Cricket Stadium, Lucknow",
+        "teams": [
+          "SRH",
+          "RCB"
+        ],
+        "winner": "SRH",
+        "result": "SRH won by 42 runs"
+      },
+      {
+        "date": "2024-04-25",
+        "city": "Hyderabad",
+        "venue": "Rajiv Gandhi International Stadium, Uppal, Hyderabad",
+        "teams": [
+          "RCB",
+          "SRH"
+        ],
+        "winner": "RCB",
+        "result": "RCB won by 35 runs"
+      },
+      {
+        "date": "2024-04-15",
+        "city": "Bengaluru",
+        "venue": "M Chinnaswamy Stadium, Bengaluru",
+        "teams": [
+          "SRH",
+          "RCB"
+        ],
+        "winner": "SRH",
+        "result": "SRH won by 25 runs"
+      }
+    ]
+  },
+  "68": {
+    "source": "Cricsheet IPL JSON, generated 2026-05-14",
+    "h2h": {
+      "total": 7,
+      "wins": {
+        "LSG": 3,
+        "PBKS": 4
+      },
+      "noResult": 0
+    },
+    "cityH2h": {
+      "total": 3,
+      "wins": {
+        "LSG": 1,
+        "PBKS": 2
+      },
+      "noResult": 0
+    },
+    "venueRecords": {
+      "LSG": {
+        "matches": 26,
+        "wins": 10,
+        "losses": 14,
+        "noResult": 2
+      },
+      "PBKS": {
+        "matches": 3,
+        "wins": 2,
+        "losses": 1,
+        "noResult": 0
+      }
+    },
+    "previousAtVenue": [
+      {
+        "date": "2025-04-01",
+        "city": "Lucknow",
+        "venue": "Bharat Ratna Shri Atal Bihari Vajpayee Ekana Cricket Stadium, Lucknow",
+        "teams": [
+          "LSG",
+          "PBKS"
+        ],
+        "winner": "PBKS",
+        "result": "PBKS won by 8 wickets"
+      },
+      {
+        "date": "2024-03-30",
+        "city": "Lucknow",
+        "venue": "Bharat Ratna Shri Atal Bihari Vajpayee Ekana Cricket Stadium, Lucknow",
+        "teams": [
+          "LSG",
+          "PBKS"
+        ],
+        "winner": "LSG",
+        "result": "LSG won by 21 runs"
+      },
+      {
+        "date": "2023-04-15",
+        "city": "Lucknow",
+        "venue": "Bharat Ratna Shri Atal Bihari Vajpayee Ekana Cricket Stadium, Lucknow",
+        "teams": [
+          "LSG",
+          "PBKS"
+        ],
+        "winner": "PBKS",
+        "result": "PBKS won by 2 wickets"
+      }
+    ],
+    "recentMeetings": [
+      {
+        "date": "2026-04-19",
+        "city": "New Chandigarh",
+        "venue": "Maharaja Yadavindra Singh International Cricket Stadium, New Chandigarh",
+        "teams": [
+          "PBKS",
+          "LSG"
+        ],
+        "winner": "PBKS",
+        "result": "PBKS won by 54 runs"
+      },
+      {
+        "date": "2025-05-04",
+        "city": "Dharamsala",
+        "venue": "Himachal Pradesh Cricket Association Stadium, Dharamsala",
+        "teams": [
+          "PBKS",
+          "LSG"
+        ],
+        "winner": "PBKS",
+        "result": "PBKS won by 37 runs"
+      },
+      {
+        "date": "2025-04-01",
+        "city": "Lucknow",
+        "venue": "Bharat Ratna Shri Atal Bihari Vajpayee Ekana Cricket Stadium, Lucknow",
+        "teams": [
+          "LSG",
+          "PBKS"
+        ],
+        "winner": "PBKS",
+        "result": "PBKS won by 8 wickets"
+      },
+      {
+        "date": "2024-03-30",
+        "city": "Lucknow",
+        "venue": "Bharat Ratna Shri Atal Bihari Vajpayee Ekana Cricket Stadium, Lucknow",
+        "teams": [
+          "LSG",
+          "PBKS"
+        ],
+        "winner": "LSG",
+        "result": "LSG won by 21 runs"
+      }
+    ]
+  },
+  "69": {
+    "source": "Cricsheet IPL JSON, generated 2026-05-14",
+    "h2h": {
+      "total": 31,
+      "wins": {
+        "MI": 16,
+        "RR": 15
+      },
+      "noResult": 0
+    },
+    "cityH2h": {
+      "total": 13,
+      "wins": {
+        "MI": 8,
+        "RR": 5
+      },
+      "noResult": 0
+    },
+    "venueRecords": {
+      "MI": {
+        "matches": 105,
+        "wins": 64,
+        "losses": 40,
+        "noResult": 1
+      },
+      "RR": {
+        "matches": 33,
+        "wins": 17,
+        "losses": 16,
+        "noResult": 0
+      }
+    },
+    "previousAtVenue": [
+      {
+        "date": "2024-04-01",
+        "city": "Mumbai",
+        "venue": "Wankhede Stadium, Mumbai",
+        "teams": [
+          "MI",
+          "RR"
+        ],
+        "winner": "RR",
+        "result": "RR won by 6 wickets"
+      },
+      {
+        "date": "2023-04-30",
+        "city": "Mumbai",
+        "venue": "Wankhede Stadium, Mumbai",
+        "teams": [
+          "RR",
+          "MI"
+        ],
+        "winner": "MI",
+        "result": "MI won by 6 wickets"
+      },
+      {
+        "date": "2022-04-30",
+        "city": "Mumbai",
+        "venue": "Dr DY Patil Sports Academy, Mumbai",
+        "teams": [
+          "RR",
+          "MI"
+        ],
+        "winner": "MI",
+        "result": "MI won by 5 wickets"
+      }
+    ],
+    "recentMeetings": [
+      {
+        "date": "2026-04-07",
+        "city": "Guwahati",
+        "venue": "Barsapara Cricket Stadium, Guwahati",
+        "teams": [
+          "RR",
+          "MI"
+        ],
+        "winner": "RR",
+        "result": "RR won by 27 runs"
+      },
+      {
+        "date": "2025-05-01",
+        "city": "Jaipur",
+        "venue": "Sawai Mansingh Stadium, Jaipur",
+        "teams": [
+          "MI",
+          "RR"
+        ],
+        "winner": "MI",
+        "result": "MI won by 100 runs"
+      },
+      {
+        "date": "2024-04-22",
+        "city": "Jaipur",
+        "venue": "Sawai Mansingh Stadium, Jaipur",
+        "teams": [
+          "MI",
+          "RR"
+        ],
+        "winner": "RR",
+        "result": "RR won by 9 wickets"
+      },
+      {
+        "date": "2024-04-01",
+        "city": "Mumbai",
+        "venue": "Wankhede Stadium, Mumbai",
+        "teams": [
+          "MI",
+          "RR"
+        ],
+        "winner": "RR",
+        "result": "RR won by 6 wickets"
+      }
+    ]
+  },
+  "70": {
+    "source": "Cricsheet IPL JSON, generated 2026-05-14",
+    "h2h": {
+      "total": 35,
+      "wins": {
+        "KKR": 20,
+        "DC": 14
+      },
+      "noResult": 1
+    },
+    "cityH2h": {
+      "total": 10,
+      "wins": {
+        "KKR": 8,
+        "DC": 2
+      },
+      "noResult": 0
+    },
+    "venueRecords": {
+      "KKR": {
+        "matches": 90,
+        "wins": 50,
+        "losses": 38,
+        "noResult": 2
+      },
+      "DC": {
+        "matches": 10,
+        "wins": 2,
+        "losses": 8,
+        "noResult": 0
+      }
+    },
+    "previousAtVenue": [
+      {
+        "date": "2024-04-29",
+        "city": "Kolkata",
+        "venue": "Eden Gardens, Kolkata",
+        "teams": [
+          "DC",
+          "KKR"
+        ],
+        "winner": "KKR",
+        "result": "KKR won by 7 wickets"
+      },
+      {
+        "date": "2019-04-12",
+        "city": "Kolkata",
+        "venue": "Eden Gardens",
+        "teams": [
+          "KKR",
+          "DC"
+        ],
+        "winner": "DC",
+        "result": "DC won by 7 wickets"
+      },
+      {
+        "date": "2018-04-16",
+        "city": "Kolkata",
+        "venue": "Eden Gardens",
+        "teams": [
+          "KKR",
+          "DC"
+        ],
+        "winner": "KKR",
+        "result": "KKR won by 71 runs"
+      }
+    ],
+    "recentMeetings": [
+      {
+        "date": "2026-05-08",
+        "city": "Delhi",
+        "venue": "Arun Jaitley Stadium, Delhi",
+        "teams": [
+          "DC",
+          "KKR"
+        ],
+        "winner": "KKR",
+        "result": "KKR won by 8 wickets"
+      },
+      {
+        "date": "2025-04-29",
+        "city": "Delhi",
+        "venue": "Arun Jaitley Stadium, Delhi",
+        "teams": [
+          "KKR",
+          "DC"
+        ],
+        "winner": "KKR",
+        "result": "KKR won by 14 runs"
+      },
+      {
+        "date": "2024-04-29",
+        "city": "Kolkata",
+        "venue": "Eden Gardens, Kolkata",
+        "teams": [
+          "DC",
+          "KKR"
+        ],
+        "winner": "KKR",
+        "result": "KKR won by 7 wickets"
+      },
+      {
+        "date": "2024-04-03",
+        "city": "Visakhapatnam",
+        "venue": "Dr. Y.S. Rajasekhara Reddy ACA-VDCA Cricket Stadium, Visakhapatnam",
+        "teams": [
+          "KKR",
+          "DC"
+        ],
+        "winner": "KKR",
+        "result": "KKR won by 106 runs"
+      }
+    ]
+  }
+};
+
+    </script>
+    <script>
+const STORAGE_KEY = "ipl-2026-points-predictor";
+const SHARE_PARAM = "p";
+const LIVE_REFRESH_MS = 15 * 1000;
+const SEASON_MATCHES_PER_TEAM = 14;
+const LIVE_API_URL = "/api/live";
+const matchIntel = window.MATCH_INTEL || {};
+
+const initialTeams = [
+  { code: "RCB", name: "Royal Challengers Bengaluru", played: 11, wins: 7, losses: 4, noResult: 0, points: 14, nrr: 1.103, startRank: 1, color: "#b0182d" },
+  { code: "SRH", name: "Sunrisers Hyderabad", played: 11, wins: 7, losses: 4, noResult: 0, points: 14, nrr: 0.737, startRank: 2, color: "#f06423" },
+  { code: "GT", name: "Gujarat Titans", played: 11, wins: 7, losses: 4, noResult: 0, points: 14, nrr: 0.228, startRank: 3, color: "#1c315e" },
+  { code: "PBKS", name: "Punjab Kings", played: 11, wins: 6, losses: 4, noResult: 1, points: 13, nrr: 0.428, startRank: 4, color: "#d71920" },
+  { code: "CSK", name: "Chennai Super Kings", played: 11, wins: 6, losses: 5, noResult: 0, points: 12, nrr: 0.185, startRank: 5, color: "#f4c430" },
+  { code: "RR", name: "Rajasthan Royals", played: 11, wins: 6, losses: 5, noResult: 0, points: 12, nrr: 0.082, startRank: 6, color: "#c02d88" },
+  { code: "DC", name: "Delhi Capitals", played: 12, wins: 5, losses: 7, noResult: 0, points: 10, nrr: -0.993, startRank: 7, color: "#256ec1" },
+  { code: "KKR", name: "Kolkata Knight Riders", played: 10, wins: 4, losses: 5, noResult: 1, points: 9, nrr: -0.169, startRank: 8, color: "#4b2a83" },
+  { code: "MI", name: "Mumbai Indians", played: 11, wins: 3, losses: 8, noResult: 0, points: 6, nrr: -0.585, startRank: 9, color: "#006cb7" },
+  { code: "LSG", name: "Lucknow Super Giants", played: 11, wins: 3, losses: 8, noResult: 0, points: 6, nrr: -0.920, startRank: 10, color: "#1ba7a6" },
+];
+
+const teamLogos = {
+  RCB: "https://cricketvectors.akamaized.net/Teams/K.png",
+  SRH: "https://cricketvectors.akamaized.net/Teams/L.png",
+  GT: "https://cricketvectors.akamaized.net/Teams/KB.png",
+  PBKS: "https://cricketvectors.akamaized.net/Teams/I.png",
+  CSK: "https://cricketvectors.akamaized.net/Teams/G.png",
+  RR: "https://cricketvectors.akamaized.net/Teams/M.png",
+  DC: "https://cricketvectors.akamaized.net/Teams/H.png",
+  KKR: "https://cricketvectors.akamaized.net/Teams/J.png",
+  MI: "https://cricketvectors.akamaized.net/Teams/F.png",
+  LSG: "https://cricketvectors.akamaized.net/Teams/KC.png",
+};
+
+const allFixtures = [
+  { match: 54, date: "10 May", isoDate: "2026-05-10", time: "7:30 PM", venue: "Raipur", teamA: "MI", teamB: "RCB" },
+  { match: 55, date: "11 May", isoDate: "2026-05-11", time: "7:30 PM", venue: "Dharamsala", teamA: "PBKS", teamB: "DC" },
+  { match: 56, date: "12 May", isoDate: "2026-05-12", time: "7:30 PM", venue: "Ahmedabad", teamA: "GT", teamB: "SRH" },
+  { match: 57, date: "13 May", isoDate: "2026-05-13", time: "7:30 PM", venue: "Raipur", teamA: "RCB", teamB: "KKR" },
+  { match: 58, date: "14 May", isoDate: "2026-05-14", time: "7:30 PM", venue: "Dharamsala", teamA: "PBKS", teamB: "MI" },
+  { match: 59, date: "15 May", isoDate: "2026-05-15", time: "7:30 PM", venue: "Lucknow", teamA: "LSG", teamB: "CSK" },
+  { match: 60, date: "16 May", isoDate: "2026-05-16", time: "7:30 PM", venue: "Kolkata", teamA: "KKR", teamB: "GT" },
+  { match: 61, date: "17 May", isoDate: "2026-05-17", time: "3:30 PM", venue: "Dharamsala", teamA: "PBKS", teamB: "RCB" },
+  { match: 62, date: "17 May", isoDate: "2026-05-17", time: "7:30 PM", venue: "Delhi", teamA: "DC", teamB: "RR" },
+  { match: 63, date: "18 May", isoDate: "2026-05-18", time: "7:30 PM", venue: "Chennai", teamA: "CSK", teamB: "SRH" },
+  { match: 64, date: "19 May", isoDate: "2026-05-19", time: "7:30 PM", venue: "Jaipur", teamA: "RR", teamB: "LSG" },
+  { match: 65, date: "20 May", isoDate: "2026-05-20", time: "7:30 PM", venue: "Kolkata", teamA: "KKR", teamB: "MI" },
+  { match: 66, date: "21 May", isoDate: "2026-05-21", time: "7:30 PM", venue: "Ahmedabad", teamA: "CSK", teamB: "GT" },
+  { match: 67, date: "22 May", isoDate: "2026-05-22", time: "7:30 PM", venue: "Hyderabad", teamA: "SRH", teamB: "RCB" },
+  { match: 68, date: "23 May", isoDate: "2026-05-23", time: "7:30 PM", venue: "Lucknow", teamA: "LSG", teamB: "PBKS" },
+  { match: 69, date: "24 May", isoDate: "2026-05-24", time: "3:30 PM", venue: "Mumbai", teamA: "MI", teamB: "RR" },
+  { match: 70, date: "24 May", isoDate: "2026-05-24", time: "7:30 PM", venue: "Kolkata", teamA: "KKR", teamB: "DC" },
+];
+
+const teamCodeByName = Object.fromEntries(initialTeams.map((team) => [team.name.toLowerCase(), team.code]));
+const canonicalTeamByCode = Object.fromEntries(initialTeams.map((team) => [team.code, team]));
+
+let teams = cloneTeams(initialTeams);
+let liveStatuses = {};
+let lastLiveTableSignature = "";
+let lastLiveStatusSignature = "";
+let fixtures = buildActiveFixtures();
+let picks = loadPicks();
+prunePicksToActiveFixtures(false);
+
+const standingsBody = document.querySelector("#standingsBody");
+const mobileStandings = document.querySelector("#mobileStandings");
+const fixtureList = document.querySelector("#fixtureList");
+const remainingCount = document.querySelector("#remainingCount");
+const pickedCount = document.querySelector("#pickedCount");
+const topSeed = document.querySelector("#topSeed");
+const liveMode = document.querySelector("#liveMode");
+const liveStatus = document.querySelector("#liveStatus");
+const legend = document.querySelector("#legend");
+const resetPicks = document.querySelector("#resetPicks");
+const refreshLive = document.querySelector("#refreshLive");
+const copyScenario = document.querySelector("#copyScenario");
+const copyShareLink = document.querySelector("#copyShareLink");
+const matchModal = document.querySelector("#matchModal");
+const modalContent = document.querySelector("#modalContent");
+const modalBackdrop = document.querySelector("#modalBackdrop");
+const modalClose = document.querySelector("#modalClose");
+
+renderLegend();
+renderFixtures();
+update();
+syncUrlWithPicks();
+refreshLiveData();
+window.setInterval(() => refreshLiveData({ quiet: true }), LIVE_REFRESH_MS);
+
+resetPicks.addEventListener("click", () => {
+  picks = {};
+  persistPicks();
+  renderFixtures();
+  update();
+});
+
+refreshLive.addEventListener("click", () => refreshLiveData());
+modalBackdrop.addEventListener("click", closeMatchModal);
+modalClose.addEventListener("click", closeMatchModal);
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !matchModal.hidden) {
+    closeMatchModal();
+  }
+});
+
+copyShareLink.addEventListener("click", async () => {
+  const shareUrl = buildShareUrl();
+
+  try {
+    await copyText(shareUrl);
+    pulseButton(copyShareLink, "Link copied");
+  } catch {
+    pulseButton(copyShareLink, "Copy failed");
+  }
+});
+
+copyScenario.addEventListener("click", async () => {
+  const selected = fixtures
+    .filter((fixture) => picks[fixture.match])
+    .map((fixture) => {
+      const pick = picks[fixture.match] === "NR" ? "No result" : `${picks[fixture.match]} win`;
+      return `M${fixture.match}: ${fixture.teamA} vs ${fixture.teamB} - ${pick}`;
+    });
+
+  const chances = calculatePlayoffChances();
+  const table = projectTable()
+    .map((team, index) => {
+      const chance = chances[team.code]?.label ?? "0%";
+      return `${index + 1}. ${team.code} ${team.points} pts, ${chance} playoff chance (${team.wins}W, NRR ${formatNrr(team.nrr)})`;
+    })
+    .join("\n");
+
+  const text = `IPL 2026 scenario\n${buildShareUrl()}\n\nPicks:\n${selected.length ? selected.join("\n") : "No picks yet"}\n\nProjected table:\n${table}`;
+
+  try {
+    await copyText(text);
+    pulseButton(copyScenario, "Copied");
+  } catch {
+    pulseButton(copyScenario, "Copy failed");
+  }
+});
+
+function renderLegend() {
+  legend.innerHTML = "";
+  initialTeams.forEach((team) => {
+    legend.appendChild(createTeamPill(team.code));
+  });
+}
+
+function renderFixtures() {
+  fixtureList.innerHTML = "";
+
+  if (fixtures.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "empty-state";
+    empty.textContent = "All league matches are already reflected in the table.";
+    fixtureList.appendChild(empty);
+    return;
+  }
+
+  fixtures.forEach((fixture) => {
+    const teamA = teamByCode()[fixture.teamA];
+    const teamB = teamByCode()[fixture.teamB];
+    const card = document.createElement("article");
+    card.className = `fixture-card${picks[fixture.match] ? " selected" : ""}`;
+    card.tabIndex = 0;
+    card.setAttribute("role", "button");
+    card.setAttribute("aria-label", `Open ${fixture.teamA} versus ${fixture.teamB} preview`);
+    card.style.setProperty("--team-a-color", teamA.color);
+    card.style.setProperty("--team-b-color", teamB.color);
+
+    const status = liveStatuses[fixture.match];
+    const statusText = status?.label && !status.complete ? status.label : `${fixture.venue} | ${fixture.time} IST`;
+
+    const top = document.createElement("div");
+    top.className = "fixture-top";
+    top.innerHTML = `
+      <div>
+        <div class="match-no">Match ${fixture.match}</div>
+        <div class="venue">${statusText}</div>
+      </div>
+      <span class="date-chip">${status?.isLive ? "Live" : fixture.date}</span>
+    `;
+
+    const teamsRow = document.createElement("div");
+    teamsRow.className = "teams-row";
+    teamsRow.appendChild(createTeamPill(fixture.teamA));
+
+    const vs = document.createElement("span");
+    vs.className = "vs";
+    vs.textContent = "VS";
+    teamsRow.appendChild(vs);
+    teamsRow.appendChild(createTeamPill(fixture.teamB));
+
+    const resultButtons = document.createElement("div");
+    resultButtons.className = "result-buttons";
+    resultButtons.appendChild(createPickButton(fixture, fixture.teamA, `${fixture.teamA} win`));
+    resultButtons.appendChild(createPickButton(fixture, fixture.teamB, `${fixture.teamB} win`));
+    resultButtons.appendChild(createPickButton(fixture, "NR", "No result"));
+
+    card.append(top, teamsRow, resultButtons);
+    card.addEventListener("click", (event) => {
+      if (event.target.closest(".pick-button")) {
+        return;
+      }
+      openMatchModal(fixture);
+    });
+    card.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") {
+        return;
+      }
+      event.preventDefault();
+      openMatchModal(fixture);
+    });
+    fixtureList.appendChild(card);
+  });
+}
+
+function createPickButton(fixture, result, label) {
+  const button = document.createElement("button");
+  const isActive = picks[fixture.match] === result;
+  button.type = "button";
+  button.className = `pick-button${result === "NR" ? " no-result" : ""}${isActive ? " active" : ""}`;
+  button.textContent = label;
+  button.setAttribute("aria-pressed", String(isActive));
+
+  button.addEventListener("click", () => {
+    if (picks[fixture.match] === result) {
+      delete picks[fixture.match];
+    } else {
+      picks[fixture.match] = result;
+    }
+
+    persistPicks();
+    renderFixtures();
+    update();
+  });
+
+  return button;
+}
+
+function openMatchModal(fixture) {
+  const teamA = teamByCode()[fixture.teamA];
+  const teamB = teamByCode()[fixture.teamB];
+  const intel = matchIntel[String(fixture.match)] || {};
+  const lean = calculateMatchLean(fixture, intel);
+  const status = liveStatuses[fixture.match];
+
+  matchModal.style.setProperty("--team-a-color", teamA.color);
+  matchModal.style.setProperty("--team-b-color", teamB.color);
+  modalContent.innerHTML = matchModalMarkup(fixture, teamA, teamB, intel, lean, status);
+  matchModal.hidden = false;
+  document.body.classList.add("modal-open");
+  
+  window.requestAnimationFrame(() => {
+    matchModal.classList.add("is-open");
+    const barTeamA = document.getElementById('barTeamA');
+    const barTeamB = document.getElementById('barTeamB');
+    if (barTeamA && barTeamB) {
+      setTimeout(() => {
+        barTeamA.style.width = lean.teamA + '%';
+        barTeamB.style.width = lean.teamB + '%';
+      }, 300);
+    }
+  });
+  modalClose.focus();
+}
+
+function closeMatchModal() {
+  const barTeamA = document.getElementById('barTeamA');
+  const barTeamB = document.getElementById('barTeamB');
+  if (barTeamA && barTeamB) {
+    barTeamA.style.width = '0%';
+    barTeamB.style.width = '0%';
+  }
+
+  matchModal.classList.remove("is-open");
+  document.body.classList.remove("modal-open");
+  window.setTimeout(() => {
+    matchModal.hidden = true;
+    modalContent.innerHTML = "";
+  }, 400);
+}
+
+function matchModalMarkup(fixture, teamA, teamB, intel, lean, status) {
+  const previousAtVenue = intel.previousAtVenue || [];
+  const recentMeetings = intel.recentMeetings || [];
+  const cityH2h = intel.cityH2h || emptyIntelRecord(teamA.code, teamB.code);
+  const h2h = intel.h2h || emptyIntelRecord(teamA.code, teamB.code);
+  const venueA = intel.venueRecords?.[teamA.code] || emptyVenueRecord();
+  const venueB = intel.venueRecords?.[teamB.code] || emptyVenueRecord();
+  const note = previousAtVenue.length
+    ? `${previousAtVenue.length} recorded IPL meeting${previousAtVenue.length === 1 ? "" : "s"} between these teams in ${fixture.venue}.`
+    : `No recorded IPL meeting between these teams in ${fixture.venue} in the historical dataset.`;
+  const statusText = status?.label && !status.complete ? status.label : `${fixture.date}, ${fixture.time} IST`;
+
+  return `
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+    
+    <div class="match-header">
+        <h2>${teamA.code} <span class="vs-text">vs</span> ${teamB.code}</h2>
+        <div class="venue-info">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            ${fixture.venue} | ${statusText}
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <!-- Head to Head Section -->
+        <div class="stat-card">
+            <div class="stat-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20v-8m0 0V4m0 8h8m-8 0H4"/></svg>
+                Previous Battles
+            </div>
+            <div class="h2h-container">
+                <span>${teamA.code} (${h2h.wins?.[teamA.code] ?? 0})</span>
+                <span style="color:var(--muted);font-size:0.85rem;">${h2h.total ?? 0} Matches</span>
+                <span>${teamB.code} (${h2h.wins?.[teamB.code] ?? 0})</span>
+            </div>
+            <div class="h2h-bar-wrapper">
+                <div class="h2h-bar-1" style="width: ${h2h.total ? (h2h.wins?.[teamA.code] || 0) / h2h.total * 100 : 50}%"></div>
+                <div class="h2h-bar-2" style="width: ${h2h.total ? (h2h.wins?.[teamB.code] || 0) / h2h.total * 100 : 50}%"></div>
+            </div>
+            <p class="fine-print" style="margin-top: 15px;">${formatNoResult(h2h.noResult)} ${h2h.total ? "across recorded IPL meetings." : "in recorded IPL meetings."}</p>
+        </div>
+
+        <!-- Win Probability Section -->
+        <div class="stat-card">
+            <div class="stat-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                Likely Chances of Winning
+            </div>
+            <div class="prob-container">
+                <div class="prob-team">
+                    <span class="prob-name">${teamA.code}</span>
+                    <div class="prob-track">
+                        <div class="prob-fill" id="barTeamA" style="--team-bg: linear-gradient(90deg, color-mix(in srgb, ${teamA.color} 50%, black), ${teamA.color});"></div>
+                    </div>
+                    <span class="prob-value">${lean.teamA}%</span>
+                </div>
+                <div class="prob-team">
+                    <span class="prob-name">${teamB.code}</span>
+                    <div class="prob-track">
+                        <div class="prob-fill" id="barTeamB" style="--team-bg: linear-gradient(90deg, color-mix(in srgb, ${teamB.color} 50%, black), ${teamB.color});"></div>
+                    </div>
+                    <span class="prob-value">${lean.teamB}%</span>
+                </div>
+            </div>
+            <p class="fine-print" style="margin-top: 15px;">${lean.summary}</p>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                Previous battles in ${fixture.venue}
+            </div>
+            <p class="fine-print">${note}</p>
+            ${meetingList(previousAtVenue, teamA, teamB)}
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                City record
+            </div>
+            <div class="venue-rows">
+                ${venueRecordMarkup(teamA, venueA)}
+                ${venueRecordMarkup(teamB, venueB)}
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                At this city
+            </div>
+            <div class="mini-score">
+                <span>${teamA.code}<strong>${cityH2h.wins?.[teamA.code] ?? 0}</strong></span>
+                <span>Meetings<strong>${cityH2h.total ?? 0}</strong></span>
+                <span>${teamB.code}<strong>${cityH2h.wins?.[teamB.code] ?? 0}</strong></span>
+            </div>
+        </div>
+
+        <div class="stat-card" style="grid-column: 1 / -1;">
+            <div class="stat-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                Recent rivalry
+            </div>
+            ${meetingList(recentMeetings, teamA, teamB)}
+        </div>
+    </div>
+  `;
+}
+
+function calculateMatchLean(fixture, intel) {
+  const table = teamByCode();
+  const teamA = table[fixture.teamA];
+  const teamB = table[fixture.teamB];
+  const h2h = intel.h2h || emptyIntelRecord(teamA.code, teamB.code);
+  const cityH2h = intel.cityH2h || emptyIntelRecord(teamA.code, teamB.code);
+  const venueA = intel.venueRecords?.[teamA.code] || emptyVenueRecord();
+  const venueB = intel.venueRecords?.[teamB.code] || emptyVenueRecord();
+
+  const formDiff = teamStrength(teamA) - teamStrength(teamB);
+  const h2hLean = recordLean(h2h, teamA.code, teamB.code);
+  const cityLean = recordLean(cityH2h, teamA.code, teamB.code);
+  const venueLean = winRate(venueA) - winRate(venueB);
+  const raw = 0.5 + formDiff * 0.62 + (h2hLean - 0.5) * 0.18 + (cityLean - 0.5) * 0.12 + venueLean * 0.12;
+  const teamAChance = Math.round(clamp(raw, 0.18, 0.82) * 100);
+  const leader = teamAChance >= 50 ? teamA.code : teamB.code;
+  const gap = Math.abs(teamAChance - (100 - teamAChance));
+  const confidence = gap >= 24 ? "clear lean" : gap >= 12 ? "slight lean" : "near toss-up";
+
+  return {
+    teamA: teamAChance,
+    teamB: 100 - teamAChance,
+    summary: `${leader} is a ${confidence}, based on season form, NRR, overall H2H and ${fixture.venue} records.`,
+  };
+}
+
+function teamStrength(team) {
+  const winRateValue = team.played ? (team.wins + team.noResult * 0.5) / team.played : 0.5;
+  const pointsRate = team.played ? team.points / (team.played * 2) : 0.5;
+  const nrrScore = clamp(0.5 + team.nrr / 4, 0.18, 0.82);
+  return winRateValue * 0.5 + pointsRate * 0.28 + nrrScore * 0.22;
+}
+
+function recordLean(record, teamA, teamB) {
+  if (!record.total) {
+    return 0.5;
+  }
+
+  const effectiveTotal = record.total - (record.noResult || 0);
+  if (!effectiveTotal) {
+    return 0.5;
+  }
+
+  return (record.wins?.[teamA] || 0) / effectiveTotal;
+}
+
+function winRate(record) {
+  const effectiveTotal = record.matches - (record.noResult || 0);
+  if (!effectiveTotal) {
+    return 0.5;
+  }
+
+  return record.wins / effectiveTotal;
+}
+
+function meetingList(meetings, teamA, teamB) {
+  if (!meetings?.length) {
+    return `<p class="empty-mini">No prior entry found for this exact slice.</p>`;
+  }
+
+  return `
+    <div class="meeting-list">
+      ${meetings
+        .map(
+          (meeting) => `
+            <article>
+              <span>${formatDate(meeting.date)} | ${meeting.city}</span>
+              <strong>${meeting.result}</strong>
+              <small>${meeting.teams.join(" vs ")}${meeting.venue ? ` at ${meeting.venue}` : ""}</small>
+            </article>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+function venueRecordMarkup(team, record) {
+  return `
+    <div class="venue-row">
+      ${logoMarkup(team, "venue-logo")}
+      <span>${team.code}</span>
+      <strong>${record.wins}-${record.losses}</strong>
+      <small>${record.matches} matches</small>
+    </div>
+  `;
+}
+
+function modalTeamMark(team) {
+  return `
+    <div class="modal-team" style="--team-color: ${team.color}">
+      ${logoMarkup(team, "modal-logo")}
+      <strong>${team.code}</strong>
+    </div>
+  `;
+}
+
+function createTeamPill(code) {
+  const team = teamByCode()[code];
+  const template = document.querySelector("#teamBadgeTemplate");
+  const pill = template.content.firstElementChild.cloneNode(true);
+  pill.style.setProperty("--team-color", team.color);
+  const logo = pill.querySelector(".team-logo");
+  logo.src = teamLogos[code];
+  logo.alt = `${team.name} logo`;
+  pill.querySelector(".team-abbr").textContent = code;
+  pill.title = team.name;
+  return pill;
+}
+
+function update() {
+  const table = projectTable();
+  const chances = calculatePlayoffChances();
+  const picked = Object.keys(picks).length;
+
+  remainingCount.textContent = String(fixtures.length - picked);
+  pickedCount.textContent = String(picked);
+  topSeed.textContent = table[0]?.code ?? "-";
+
+  standingsBody.innerHTML = "";
+  mobileStandings.innerHTML = "";
+  table.forEach((team, index) => {
+    const chance = chances[team.code] ?? { label: "0%", pct: 0 };
+    const row = document.createElement("tr");
+    if (index < 4) {
+      row.classList.add("qualifier");
+    }
+
+    const movement = team.startRank - (index + 1);
+    const movementClass = movement > 0 ? "up" : movement < 0 ? "down" : "same";
+    const movementText = movement > 0 ? `+${movement}` : movement < 0 ? String(movement) : "-";
+
+    row.innerHTML = `
+      <td><span class="rank">${index + 1}</span><span class="movement ${movementClass}">${movementText}</span></td>
+      <td>
+        <div class="team-cell" style="--team-color: ${team.color}">
+          ${logoMarkup(team, "team-mark")}
+          <span class="team-name-full">${team.name}<span class="team-sub">${team.code}</span></span>
+          <span class="compact-code">${team.code}</span>
+        </div>
+      </td>
+      <td>${team.played}</td>
+      <td>${team.wins}</td>
+      <td>${team.losses}</td>
+      <td>${team.noResult}</td>
+      <td class="points">${team.points}</td>
+      <td>${formatNrr(team.nrr)}</td>
+      <td class="chance-cell">${chanceMarkup(chance)}</td>
+    `;
+
+    standingsBody.appendChild(row);
+    mobileStandings.appendChild(createMobileTeamCard(team, index, movement, movementClass, movementText, chance));
+  });
+}
+
+function createMobileTeamCard(team, index, movement, movementClass, movementText, chance) {
+  const card = document.createElement("article");
+  card.className = "mobile-team-card";
+  if (index < 4) {
+    card.classList.add("qualifier");
+  }
+
+  card.innerHTML = `
+    <div class="mobile-team-top">
+      <span class="rank">${index + 1}</span>
+      <div class="team-cell" style="--team-color: ${team.color}">
+        ${logoMarkup(team, "team-mark")}
+        <span>${team.name}<span class="team-sub">${team.code} <span class="movement ${movementClass}">${movementText}</span></span></span>
+      </div>
+      <div class="mobile-points">
+        <strong>${team.points}</strong>
+        <span>Pts</span>
+      </div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-chip"><span>P</span><strong>${team.played}</strong></div>
+      <div class="stat-chip"><span>W</span><strong>${team.wins}</strong></div>
+      <div class="stat-chip"><span>L</span><strong>${team.losses}</strong></div>
+      <div class="stat-chip"><span>NR</span><strong>${team.noResult}</strong></div>
+      <div class="stat-chip"><span>NRR</span><strong>${formatNrr(team.nrr)}</strong></div>
+      <div class="stat-chip"><span>Chance</span><strong>${chance.label}</strong></div>
+      <div class="stat-chip"><span>Max</span><strong>${team.maxPoints}</strong></div>
+    </div>
+  `;
+
+  return card;
+}
+
+function projectTable(scenarioPicks = picks, scenarioFixtures = fixtures) {
+  const table = Object.fromEntries(
+    teams.map((team) => [team.code, { ...team, maxPoints: team.points }]),
+  );
+
+  scenarioFixtures.forEach((fixture) => {
+    const result = scenarioPicks[fixture.match];
+    if (!result) {
+      return;
+    }
+
+    const teamA = table[fixture.teamA];
+    const teamB = table[fixture.teamB];
+    teamA.played += 1;
+    teamB.played += 1;
+
+    if (result === "NR") {
+      teamA.noResult += 1;
+      teamB.noResult += 1;
+      teamA.points += 1;
+      teamB.points += 1;
+      return;
+    }
+
+    const winner = table[result];
+    const loser = result === fixture.teamA ? teamB : teamA;
+    winner.wins += 1;
+    winner.points += 2;
+    loser.losses += 1;
+  });
+
+  Object.values(table).forEach((team) => {
+    const openMatches = scenarioFixtures.filter(
+      (fixture) => !scenarioPicks[fixture.match] && (fixture.teamA === team.code || fixture.teamB === team.code),
+    ).length;
+    team.maxPoints = team.points + openMatches * 2;
+  });
+
+  return sortTable(Object.values(table));
+}
+
+function calculatePlayoffChances() {
+  const counts = Object.fromEntries(teams.map((team) => [team.code, 0]));
+  const undecided = fixtures.filter((fixture) => !picks[fixture.match]);
+  const total = 2 ** undecided.length || 1;
+
+  for (let mask = 0; mask < total; mask += 1) {
+    const scenarioPicks = { ...picks };
+
+    undecided.forEach((fixture, bit) => {
+      scenarioPicks[fixture.match] = mask & (1 << bit) ? fixture.teamB : fixture.teamA;
+    });
+
+    projectTable(scenarioPicks, fixtures)
+      .slice(0, 4)
+      .forEach((team) => {
+        counts[team.code] += 1;
+      });
+  }
+
+  return Object.fromEntries(
+    teams.map((team) => {
+      const pct = (counts[team.code] / total) * 100;
+      return [team.code, { pct, label: formatChance(pct), count: counts[team.code], total }];
+    }),
+  );
+}
+
+function sortTable(table) {
+  return table.sort((a, b) => {
+    if (b.points !== a.points) return b.points - a.points;
+    if (b.wins !== a.wins) return b.wins - a.wins;
+    if (b.nrr !== a.nrr) return b.nrr - a.nrr;
+    return a.name.localeCompare(b.name);
+  });
+}
+
+async function refreshLiveData(options = {}) {
+  if (!options.quiet) {
+    setLiveStatus("Checking live data...", "API");
+  }
+
+  let payload;
+  try {
+    payload = await getLivePayload();
+  } catch (err) {
+    console.warn("Live update failed:", err);
+    setLiveStatus("Live update failed; using built-in data", "Offline");
+    return;
+  }
+
+  // payload.matchStatuses is the pre-parsed JSON from CricAPI
+  const parsedStatuses = payload.matchStatuses || {};
+  if (!Object.keys(parsedStatuses).length) {
+    setLiveStatus(`No live matches at ${formatClock(new Date())}`, "API");
+    return;
+  }
+
+  const signature = liveStatusSignature(parsedStatuses);
+  if (signature === lastLiveStatusSignature) {
+    setLiveStatus(`Checked at ${formatClock(new Date())}; no new score changes`, "API");
+    return;
+  }
+
+  // Something changed
+  liveStatuses = parsedStatuses;
+  lastLiveStatusSignature = signature;
+  applyFreshCompletedStatuses(liveStatuses);
+
+  fixtures = buildActiveFixtures(liveStatuses);
+  prunePicksToActiveFixtures(false);
+  renderFixtures();
+  update();
+
+  setLiveStatus(`Live update at ${formatClock(new Date())}`, "API");
+}
+
+async function getLivePayload() {
+  const cacheBust = `cb=${Date.now()}`;
+  const response = await fetch(`${LIVE_API_URL}?${cacheBust}`, { cache: "no-store" });
+
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    throw new Error(body.message || `API returned ${response.status}`);
+  }
+
+  return response.json();
+}
+
+function liveStatusSignature(statuses) {
+  return JSON.stringify(
+    Object.entries(statuses)
+      .sort(([matchA], [matchB]) => Number(matchA) - Number(matchB))
+      .map(([match, status]) => [
+        match,
+        status.label,
+        status.winner,
+        Boolean(status.complete),
+        Boolean(status.noResult),
+        Boolean(status.isLive),
+      ]),
+  );
+}
+
+function buildActiveFixtures(statuses = liveStatuses) {
+  const today = istDateKey(new Date());
+  const remainingByTeam = Object.fromEntries(
+    teams.map((team) => [team.code, Math.max(0, SEASON_MATCHES_PER_TEAM - team.played)]),
+  );
+
+  return allFixtures.filter((fixture) => {
+    const status = statuses[fixture.match];
+
+    if (status?.complete) {
+      return false;
+    }
+
+    if (status && !status.isLive && /won|complete|stumps|abandoned|no result/i.test(status.label)) {
+      return false;
+    }
+
+    if (fixture.isoDate < today) {
+      return false;
+    }
+
+    return remainingByTeam[fixture.teamA] > 0 && remainingByTeam[fixture.teamB] > 0;
+  });
+}
+
+function applyFreshCompletedStatuses(statuses) {
+  const table = teamByCode();
+  const expectedPlayed = Object.fromEntries(initialTeams.map((team) => [team.code, team.played]));
+
+  allFixtures
+    .filter((fixture) => fixture.match > 55)
+    .forEach((fixture) => {
+      const status = statuses[fixture.match];
+      if (!status?.complete) {
+        return;
+      }
+
+      const teamA = table[fixture.teamA];
+      const teamB = table[fixture.teamB];
+      const appearsReflected = teamA.played > expectedPlayed[fixture.teamA] && teamB.played > expectedPlayed[fixture.teamB];
+
+      if (!appearsReflected && teamA.played === expectedPlayed[fixture.teamA] && teamB.played === expectedPlayed[fixture.teamB]) {
+        teamA.played += 1;
+        teamB.played += 1;
+
+        if (status.noResult) {
+          teamA.noResult += 1;
+          teamB.noResult += 1;
+          teamA.points += 1;
+          teamB.points += 1;
+        } else if (status.winner && table[status.winner]) {
+          const winner = table[status.winner];
+          const loser = status.winner === fixture.teamA ? teamB : teamA;
+          winner.wins += 1;
+          winner.points += 2;
+          loser.losses += 1;
+        }
+      }
+
+      expectedPlayed[fixture.teamA] += 1;
+      expectedPlayed[fixture.teamB] += 1;
+    });
+
+  teams = sortTable(Object.values(table)).map((team, index) => ({ ...team, startRank: index + 1 }));
+}
+
+function prunePicksToActiveFixtures(shouldSync = true) {
+  const activeMatches = new Set(fixtures.map((fixture) => String(fixture.match)));
+  const nextPicks = Object.fromEntries(
+    Object.entries(picks).filter(([match]) => activeMatches.has(String(match))),
+  );
+  picks = nextPicks;
+
+  if (shouldSync) {
+    persistPicks();
+  } else {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(picks));
+    syncUrlWithPicks();
+  }
+}
+
+function loadPicks() {
+  const sharedPicks = parseSharedPicks();
+  if (Object.keys(sharedPicks).length > 0) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(sharedPicks));
+    return sharedPicks;
+  }
+
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    return Object.fromEntries(
+      Object.entries(saved).filter(([match, result]) => {
+        const fixture = allFixtures.find((item) => String(item.match) === String(match));
+        return fixture && [fixture.teamA, fixture.teamB, "NR"].includes(result);
+      }),
+    );
+  } catch {
+    return {};
+  }
+}
+
+function persistPicks() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(picks));
+  syncUrlWithPicks();
+}
+
+function buildShareUrl() {
+  syncUrlWithPicks();
+  return window.location.href;
+}
+
+function encodePicks() {
+  return fixtures
+    .filter((fixture) => picks[fixture.match])
+    .map((fixture) => `${fixture.match}.${picks[fixture.match]}`)
+    .join("_");
+}
+
+function parseSharedPicks() {
+  const params = new URLSearchParams(window.location.search);
+  const value = params.get(SHARE_PARAM);
+  if (!value) {
+    return {};
+  }
+
+  return Object.fromEntries(
+    value
+      .split("_")
+      .map((item) => item.trim())
+      .map((item) => item.match(/^(\d{2})\.([A-Z0-9]+)$/))
+      .filter(Boolean)
+      .map(([, match, result]) => [match, result])
+      .filter(([match, result]) => {
+        const fixture = allFixtures.find((item) => String(item.match) === String(match));
+        return fixture && [fixture.teamA, fixture.teamB, "NR"].includes(result);
+      }),
+  );
+}
+
+function syncUrlWithPicks() {
+  const encoded = encodePicks();
+  const url = new URL(window.location.href);
+
+  if (encoded) {
+    url.searchParams.set(SHARE_PARAM, encoded);
+  } else {
+    url.searchParams.delete(SHARE_PARAM);
+  }
+
+  window.history.replaceState({}, "", url.toString());
+}
+
+async function copyText(text) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.left = "-999px";
+  document.body.appendChild(textarea);
+  textarea.select();
+
+  const ok = document.execCommand("copy");
+  textarea.remove();
+
+  if (!ok) {
+    throw new Error("Copy failed");
+  }
+}
+
+function chanceMarkup(chance) {
+  return `
+    <span class="chance-meter" style="--chance: ${chance.pct}%">
+      <span class="chance-value">${chance.label}</span>
+      <span class="chance-track"><span class="chance-fill"></span></span>
+    </span>
+  `;
+}
+
+function logoMarkup(team, className) {
+  return `
+    <span class="logo-frame ${className}" style="--team-color: ${team.color}">
+      <img class="team-logo" src="${teamLogos[team.code]}" alt="${team.name} logo" loading="lazy" />
+    </span>
+  `;
+}
+
+function emptyIntelRecord(teamA, teamB) {
+  return { total: 0, wins: { [teamA]: 0, [teamB]: 0 }, noResult: 0 };
+}
+
+function emptyVenueRecord() {
+  return { matches: 0, wins: 0, losses: 0, noResult: 0 };
+}
+
+function formatNoResult(value = 0) {
+  if (!value) {
+    return "No no-results";
+  }
+  return `${value} no-result${value === 1 ? "" : "s"}`;
+}
+
+function formatDate(value) {
+  if (!value) {
+    return "Date unavailable";
+  }
+  return new Intl.DateTimeFormat("en-IN", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(new Date(`${value}T00:00:00`));
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function formatChance(value) {
+  if (value >= 99.95) return "100%";
+  if (value <= 0.05) return "0%";
+  if (value < 1) return "<1%";
+  if (value < 10) return `${value.toFixed(1)}%`;
+  return `${Math.round(value)}%`;
+}
+
+function formatNrr(value) {
+  return `${value >= 0 ? "+" : ""}${value.toFixed(3)}`;
+}
+
+function formatClock(date) {
+  return new Intl.DateTimeFormat("en-IN", {
+    timeZone: "Asia/Kolkata",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(date);
+}
+
+function istDateKey(date) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+function setLiveStatus(message, mode = liveMode.textContent || "On") {
+  liveStatus.textContent = message;
+  liveMode.textContent = mode;
+}
+
+function pulseButton(button, label) {
+  const original = button.textContent;
+  button.textContent = label;
+  window.setTimeout(() => {
+    button.textContent = original;
+  }, 1200);
+}
+
+function cloneTeams(source) {
+  return source.map((team) => ({ ...team }));
+}
+
+function teamByCode() {
+  return Object.fromEntries(teams.map((team) => [team.code, team]));
+}
+
+    </script>
+    <script>
+      window.va =
+        window.va ||
+        function () {
+          (window.vaq = window.vaq || []).push(arguments);
+        };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
+  </body>
+</html>

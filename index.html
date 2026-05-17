@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IPL 2026 Points Predictor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">IPL 2026</p>
+          <h1>Points Table Predictor</h1>
+          <p class="snapshot">Fast live refresh every 30 seconds when online. Future NRR is held at the current value.</p>
+        </div>
+        <div class="summary-grid" aria-label="Prediction summary">
+          <section class="summary-card">
+            <span class="summary-label">Remaining</span>
+            <strong id="remainingCount">17</strong>
+          </section>
+          <section class="summary-card">
+            <span class="summary-label">Picked</span>
+            <strong id="pickedCount">0</strong>
+          </section>
+          <section class="summary-card">
+            <span class="summary-label">Top seed</span>
+            <strong id="topSeed">-</strong>
+          </section>
+          <section class="summary-card">
+            <span class="summary-label">Live data</span>
+            <strong id="liveMode">On</strong>
+          </section>
+        </div>
+      </header>
+
+      <section class="toolbar" aria-label="Prediction actions">
+        <div class="legend" id="legend"></div>
+        <div class="toolbar-actions">
+          <span class="status-chip" id="liveStatus">Checking live data...</span>
+          <button class="ghost-button" id="refreshLive" type="button">Refresh live</button>
+          <button class="ghost-button" id="copyShareLink" type="button">Copy link</button>
+          <button class="ghost-button" id="copyScenario" type="button">Copy scenario</button>
+          <button class="danger-button" id="resetPicks" type="button">Reset picks</button>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <section class="panel standings-panel" aria-labelledby="standingsTitle">
+          <div class="panel-heading">
+            <div>
+              <p class="section-kicker">Projected standings</p>
+              <h2 id="standingsTitle">Points table</h2>
+            </div>
+            <span class="badge">Top 4 qualify</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Team</th>
+                  <th>P</th>
+                  <th>W</th>
+                  <th>L</th>
+                  <th>NR</th>
+                  <th>Pts</th>
+                  <th>NRR</th>
+                  <th>Chance</th>
+                </tr>
+              </thead>
+              <tbody id="standingsBody"></tbody>
+            </table>
+          </div>
+          <div class="mobile-standings" id="mobileStandings"></div>
+          <p class="math-note">
+            Chances assume every unpicked remaining match is a 50/50 result. Fixed NRR is used as the tiebreaker.
+          </p>
+        </section>
+
+        <section class="panel fixtures-panel" aria-labelledby="fixturesTitle">
+          <div class="panel-heading">
+            <div>
+              <p class="section-kicker">League stage</p>
+              <h2 id="fixturesTitle">Choose results</h2>
+            </div>
+            <span class="badge neutral">Win: 2 pts</span>
+          </div>
+          <div class="fixture-list" id="fixtureList"></div>
+        </section>
+      </section>
+
+      <p class="source-note">
+        Live sources: <a href="https://crex.com/series/indian-premier-league-2026-1PW/points-table">CREX points table</a>
+        and <a href="https://www.cricbuzz.com/cricket-series/9241/matches">Cricbuzz fixtures</a>.
+        Historical match notes use <a href="https://cricsheet.org/">Cricsheet</a>.
+      </p>
+    </main>
+
+    <div class="match-modal" id="matchModal" hidden>
+      <button class="modal-backdrop" id="modalBackdrop" type="button" aria-label="Close match preview"></button>
+      <section class="match-dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <button class="modal-close" id="modalClose" type="button" aria-label="Close match preview">Close</button>
+        <div id="modalContent"></div>
+      </section>
+    </div>
+
+    <template id="teamBadgeTemplate">
+      <span class="team-pill">
+        <span class="logo-frame small"><img class="team-logo" alt="" /></span>
+        <span class="team-abbr"></span>
+      </span>
+    </template>
+
+    <script src="match-intel.js"></script>
+    <script src="app.js"></script>
+    <script>
+      window.va =
+        window.va ||
+        function () {
+          (window.vaq = window.vaq || []).push(arguments);
+        };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
+  </body>
+</html>
